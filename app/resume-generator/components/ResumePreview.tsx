@@ -1,0 +1,669 @@
+"use client";
+
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  A4_RESUME_PAGE_HEIGHT,
+  A4_RESUME_WIDTH,
+  MIN_RESUME_SCALE,
+  getResumeLayoutEstimate,
+} from "./layout";
+import { categorizeSkills } from "./intelligence";
+import {
+  getHeaderContacts,
+  getVisibleEducation,
+  getVisibleExperience,
+  getVisibleProjects,
+  normalizeUrl,
+  splitLines,
+} from "./content";
+import { type ResumeData, type ResumeTemplate } from "./types";
+
+type ResumePreviewProps = {
+  data: ResumeData;
+  actions?: React.ReactNode;
+};
+
+const templateStyles: Record<
+  ResumeTemplate,
+  {
+    label: string;
+    nameClassName: string;
+    sectionTitleClassName: string;
+    dividerClassName: string;
+    entryTitleClassName: string;
+    entrySubtitleClassName: string;
+    entryMetaClassName: string;
+    projectLinksClassName: string;
+    headerClassName: string;
+    roleClassName: string;
+    contactClassName: string;
+    articleClassName: string;
+    bulletClassName: string;
+    summaryClassName: string;
+    skillsClassName: string;
+    sheetClassName: string;
+    stackClassName: string;
+  }
+> = {
+  modern: {
+    label: "Modern ATS",
+    nameClassName: "text-[32px] font-bold tracking-[-0.04em]",
+    sectionTitleClassName:
+      "flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-slate-900 before:h-[2px] before:w-9 before:bg-slate-900",
+    dividerClassName: "border-slate-900",
+    entryTitleClassName: "text-[15px] font-bold text-slate-900",
+    entrySubtitleClassName: "mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600",
+    entryMetaClassName: "shrink-0 pt-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-700",
+    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600",
+    headerClassName: "border-t-[4px] border-b-[2px] pt-5 pb-4",
+    roleClassName: "mt-1.5 text-[14px] font-semibold uppercase tracking-[0.16em] text-slate-700",
+    contactClassName: "grid gap-y-1 text-right text-[11.5px] leading-5 text-slate-600 md:justify-items-end",
+    articleClassName: "space-y-2.5 border-l-2 border-slate-900/85 pl-4",
+    bulletClassName: "space-y-1.5 pl-5 text-[13px] leading-[1.55] text-slate-700 marker:text-slate-900",
+    summaryClassName: "space-y-1.5 pl-5 text-[13px] leading-[1.6] text-slate-700 marker:text-slate-900",
+    skillsClassName: "space-y-2 pl-5 text-[13px] leading-[1.6] text-slate-700",
+    sheetClassName: "px-11 py-10",
+    stackClassName: "space-y-7",
+  },
+  minimal: {
+    label: "Minimal ATS",
+    nameClassName: "text-[28px] font-bold uppercase tracking-[0.08em]",
+    sectionTitleClassName:
+      "flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.34em] text-slate-900 before:h-[1.5px] before:flex-1 before:bg-slate-800 after:h-[1.5px] after:flex-1 after:bg-slate-800",
+    dividerClassName: "border-slate-300",
+    entryTitleClassName: "text-[14px] font-semibold uppercase tracking-[0.08em] text-slate-900",
+    entrySubtitleClassName: "text-[13.5px] text-slate-700",
+    entryMetaClassName: "text-[12px] font-medium text-slate-600",
+    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-600",
+    headerClassName: "border-y py-4 text-center",
+    roleClassName: "mt-2 text-[13px] font-medium uppercase tracking-[0.2em] text-slate-600",
+    contactClassName: "mt-3 justify-center text-[11px] leading-5 text-slate-500",
+    articleClassName: "space-y-2 border-t border-slate-200 pt-3 first:border-t-0 first:pt-0",
+    bulletClassName: "space-y-1 pl-5 text-[12.5px] leading-5 text-slate-700",
+    summaryClassName: "space-y-1 pl-5 text-[12.5px] leading-5 text-slate-700",
+    skillsClassName: "space-y-2 pl-5 text-[12.5px] leading-5 text-slate-700",
+    sheetClassName: "px-12 py-8",
+    stackClassName: "space-y-5",
+  },
+  professional: {
+    label: "Professional ATS",
+    nameClassName: "text-[29px] font-bold tracking-[-0.01em]",
+    sectionTitleClassName:
+      "border-b border-slate-500 pb-1 text-[10.5px] font-bold uppercase tracking-[0.18em] text-slate-900",
+    dividerClassName: "border-slate-500",
+    entryTitleClassName: "text-[15px] font-bold text-slate-900",
+    entrySubtitleClassName: "mt-1 text-[13px] text-slate-700",
+    entryMetaClassName: "shrink-0 pt-0.5 text-[11.5px] font-medium uppercase tracking-[0.08em] text-slate-600",
+    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-slate-600",
+    headerClassName: "pb-4 text-center",
+    roleClassName: "mt-1.5 text-[13px] font-medium text-slate-700",
+    contactClassName: "mt-3 flex flex-wrap justify-center gap-x-2 gap-y-1 text-[11.5px] leading-5 text-slate-600",
+    articleClassName: "space-y-2.5 border-b border-slate-200 pb-3 last:border-b-0 last:pb-0",
+    bulletClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.55] text-slate-700",
+    summaryClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.6] text-slate-700",
+    skillsClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.6] text-slate-700",
+    sheetClassName: "px-12 py-10",
+    stackClassName: "space-y-6",
+  },
+  executive: {
+    label: "Executive ATS",
+    nameClassName: "text-[34px] font-bold tracking-[-0.03em]",
+    sectionTitleClassName:
+      "flex items-center gap-4 border-t-[1.5px] border-slate-900 pt-2 text-[10.5px] font-bold uppercase tracking-[0.28em] text-slate-900 after:h-px after:flex-1 after:bg-slate-300",
+    dividerClassName: "border-slate-900",
+    entryTitleClassName: "text-[15.5px] font-bold text-slate-900",
+    entrySubtitleClassName: "text-[10.5px] font-semibold uppercase tracking-[0.2em] text-slate-600",
+    entryMetaClassName: "shrink-0 pt-0.5 text-[11.25px] font-semibold uppercase tracking-[0.12em] text-slate-600",
+    projectLinksClassName: "flex flex-wrap gap-x-3 gap-y-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-600 sm:justify-end",
+    headerClassName: "pb-6",
+    roleClassName: "mt-2 text-[12.5px] font-semibold uppercase tracking-[0.24em] text-slate-700",
+    contactClassName: "text-[11px] leading-5 text-slate-600",
+    articleClassName: "space-y-2.5 border-b border-slate-300 pb-4 last:border-b-0 last:pb-0",
+    bulletClassName: "space-y-1.5 pl-5 text-[12.85px] leading-[1.65] text-slate-700 marker:text-slate-900",
+    summaryClassName: "space-y-1.5 pl-5 text-[12.85px] leading-[1.65] text-slate-700 marker:text-slate-900",
+    skillsClassName: "space-y-2.5 border-l-2 border-slate-200 pl-4 text-[12.85px] leading-[1.65] text-slate-700",
+    sheetClassName: "px-12 py-10",
+    stackClassName: "space-y-6",
+  },
+};
+
+function Section({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className={className}>{title}</div>
+      {children}
+    </section>
+  );
+}
+
+function SummaryList({
+  value,
+  className,
+}: {
+  value: string;
+  className: string;
+}) {
+  const lines = splitLines(value);
+
+  if (!lines.length) return null;
+
+  return (
+    <ul className={className}>
+      {lines.map((line) => (
+        <li key={line}>{line}</li>
+      ))}
+    </ul>
+  );
+}
+
+function SkillsBlock({
+  data,
+  className,
+}: {
+  data: ResumeData;
+  className: string;
+}) {
+  const categories = categorizeSkills(data.skills);
+
+  if (!categories.length) return null;
+
+  return (
+    <div className={className}>
+      {categories.map((category) => (
+        <p key={category.title} className="break-words">
+          <span className="font-semibold text-slate-900">{category.title}:</span>{" "}
+          {category.skills.join(", ")}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function ExecutivePhoto({
+  photo,
+  position,
+}: {
+  photo: string | null;
+  position: number;
+}) {
+  if (photo) {
+    return (
+      <div className="flex h-[156px] w-[118px] items-center justify-center border-2 border-slate-900 bg-white p-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photo}
+          alt="Executive profile"
+          className="h-full w-full object-cover"
+          style={{ objectPosition: `50% ${position}%` }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[156px] w-[118px] items-center justify-center border-2 border-slate-900 bg-white text-[11px] font-bold uppercase tracking-[0.34em] text-slate-900">
+      PHOTO
+    </div>
+  );
+}
+
+function ResumeHeader({
+  data,
+  style,
+}: {
+  data: ResumeData;
+  style: (typeof templateStyles)[ResumeTemplate];
+}) {
+  const contacts = getHeaderContacts(data);
+  const isModern = data.template === "modern";
+  const isExecutive = data.template === "executive";
+  const primaryContacts = contacts.slice(0, 3);
+  const secondaryContacts = contacts.slice(3);
+
+  return (
+    <header className={`border-b pb-5 ${style.dividerClassName} ${style.headerClassName}`}>
+      {isModern ? (
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_240px] md:items-end">
+          <div>
+            <h1 className={style.nameClassName}>{data.personalInfo.fullName || "Your Name"}</h1>
+            <div className={style.roleClassName}>
+              {data.personalInfo.title || "Frontend Developer"}
+            </div>
+          </div>
+          {contacts.length > 0 ? (
+            <div className={style.contactClassName}>
+              {contacts.map((item) => (
+                <span key={item} className="break-all">
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : isExecutive ? (
+        <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_146px] md:items-start">
+          <div className="min-w-0">
+            <h1 className={style.nameClassName}>{data.personalInfo.fullName || "Your Name"}</h1>
+            <div className={style.roleClassName}>
+              {data.personalInfo.title || "Frontend Developer"}
+            </div>
+            {contacts.length > 0 ? (
+              <div className="mt-5 grid gap-2 sm:grid-cols-2 sm:gap-x-6">
+                {primaryContacts.length > 0 ? (
+                  <div className={style.contactClassName}>
+                    <div className="grid gap-y-1">
+                      {primaryContacts.map((item) => (
+                        <span key={item} className="break-all">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {secondaryContacts.length > 0 ? (
+                  <div className={style.contactClassName}>
+                    <div className="grid gap-y-1">
+                      {secondaryContacts.map((item) => (
+                        <span key={item} className="break-all">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <div className="flex justify-start md:justify-end md:border-l md:border-slate-300 md:pl-7">
+            <ExecutivePhoto photo={data.photo} position={data.photoPosition} />
+          </div>
+        </div>
+      ) : (
+        <>
+          <h1 className={style.nameClassName}>{data.personalInfo.fullName || "Your Name"}</h1>
+          <div className={style.roleClassName}>
+            {data.personalInfo.title || "Frontend Developer"}
+          </div>
+          {contacts.length > 0 ? (
+            <div className={style.contactClassName}>
+              {contacts.map((item, index) => (
+                <span key={item} className="break-all">
+                  {index > 0 ? <span className="mr-2 text-slate-400">|</span> : null}
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </>
+      )}
+    </header>
+  );
+}
+
+function ExperienceSection({
+  data,
+  style,
+}: {
+  data: ResumeData;
+  style: (typeof templateStyles)[ResumeTemplate];
+}) {
+  const items = getVisibleExperience(data);
+  const isModern = data.template === "modern";
+  const isExecutive = data.template === "executive";
+
+  if (!items.length) return null;
+
+  return (
+    <Section title="Work Experience" className={style.sectionTitleClassName}>
+      <div className="space-y-5">
+        {items.map((item) => {
+          const bullets = splitLines(item.description);
+
+          return (
+            <article key={item.id} className={style.articleClassName}>
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  {item.companyName ? (
+                    <div className={style.entrySubtitleClassName}>
+                      {item.companyName}
+                    </div>
+                  ) : !isModern ? null : (
+                    <div className={style.entrySubtitleClassName}>Company</div>
+                  )}
+                  <div className={isExecutive ? "mt-1.5" : undefined}>
+                    <div className={style.entryTitleClassName}>{item.role || "Role"}</div>
+                  </div>
+                </div>
+                {item.duration ? (
+                  <div className={style.entryMetaClassName}>
+                    {item.duration}
+                  </div>
+                ) : null}
+              </div>
+              {bullets.length > 0 ? (
+                <ul className={style.bulletClassName}>
+                  {bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+function ProjectsSection({
+  data,
+  style,
+}: {
+  data: ResumeData;
+  style: (typeof templateStyles)[ResumeTemplate];
+}) {
+  const items = getVisibleProjects(data);
+  const isModern = data.template === "modern";
+  const isExecutive = data.template === "executive";
+
+  if (!items.length) return null;
+
+  return (
+    <Section title="Projects" className={style.sectionTitleClassName}>
+      <div className="space-y-5">
+        {items.map((project) => {
+          const bullets = splitLines(project.description);
+          const links = [
+            project.githubLink
+              ? { label: "GitHub", href: normalizeUrl(project.githubLink) }
+              : null,
+            project.liveLink
+              ? { label: "Live Link", href: normalizeUrl(project.liveLink) }
+              : null,
+          ].filter(Boolean) as Array<{ label: string; href: string }>;
+
+          return (
+            <article key={project.id} className={style.articleClassName}>
+              <div className={`flex flex-col gap-1.5 ${isExecutive ? "sm:flex-row sm:items-start sm:justify-between sm:gap-4" : ""}`}>
+                <div className={style.entryTitleClassName}>
+                  <span>{project.projectName || "Project Name"}</span>
+                </div>
+                {links.length > 0 && isExecutive ? (
+                  <div className={style.projectLinksClassName}>
+                    {links.map((link, index) => (
+                      <span key={link.href}>
+                        {index > 0 ? <span className="mr-2 text-slate-400">|</span> : null}
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="break-all underline decoration-slate-300 underline-offset-2"
+                        >
+                          {link.label}
+                        </a>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              {links.length > 0 && !isExecutive ? (
+                <div className={style.projectLinksClassName}>
+                  {links.map((link, index) => (
+                    <span key={link.href}>
+                      {!isModern && index > 0 ? <span className="mr-2 text-slate-400">|</span> : null}
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="break-all underline decoration-slate-300 underline-offset-2"
+                      >
+                        {link.label}
+                      </a>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {bullets.length > 0 ? (
+                <ul className={style.bulletClassName}>
+                  {bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+function EducationSection({
+  data,
+  style,
+}: {
+  data: ResumeData;
+  style: (typeof templateStyles)[ResumeTemplate];
+}) {
+  const items = getVisibleEducation(data);
+  const isExecutive = data.template === "executive";
+
+  if (!items.length) return null;
+
+  return (
+    <Section title="Education" className={style.sectionTitleClassName}>
+      <div className="space-y-4">
+        {items.map((item) => {
+          const bullets = splitLines(item.description);
+
+          return (
+            <article key={item.id} className={style.articleClassName}>
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  {item.institutionName ? (
+                    <div className={style.entrySubtitleClassName}>{item.institutionName}</div>
+                  ) : null}
+                  <div className={isExecutive ? "mt-1.5" : undefined}>
+                    <div className={style.entryTitleClassName}>
+                      {item.degree || "Degree"}
+                    </div>
+                  </div>
+                </div>
+                {item.year ? (
+                  <div className={style.entryMetaClassName}>{item.year}</div>
+                ) : null}
+              </div>
+              {bullets.length > 0 ? (
+                <ul className={style.bulletClassName}>
+                  {bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+function CertificationsSection({
+  items,
+  style,
+}: {
+  items: string[];
+  style: (typeof templateStyles)[ResumeTemplate];
+}) {
+  if (!items.length) return null;
+
+  return (
+    <Section title="Certifications" className={style.sectionTitleClassName}>
+      <ul className={style.bulletClassName}>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+function ResumeSheet({ data }: { data: ResumeData }) {
+  const style = templateStyles[data.template];
+
+  return (
+    <div
+      className={`min-h-[980px] bg-white text-slate-900 ${style.sheetClassName}`}
+      style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
+    >
+      <div className={style.stackClassName}>
+        <ResumeHeader data={data} style={style} />
+
+        <Section title="Professional Summary" className={style.sectionTitleClassName}>
+          <SummaryList value={data.summary} className={style.summaryClassName} />
+        </Section>
+
+        <Section title="Skills" className={style.sectionTitleClassName}>
+          <SkillsBlock data={data} className={style.skillsClassName} />
+        </Section>
+
+        <ExperienceSection data={data} style={style} />
+        <ProjectsSection data={data} style={style} />
+        <EducationSection data={data} style={style} />
+        <CertificationsSection items={data.certifications} style={style} />
+      </div>
+    </div>
+  );
+}
+
+function ResumeCanvas({ data }: { data: ResumeData }) {
+  const estimate = useMemo(() => getResumeLayoutEstimate(data), [data]);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(estimate.scale);
+  const [naturalHeight, setNaturalHeight] = useState(A4_RESUME_PAGE_HEIGHT);
+  const [renderedPages, setRenderedPages] = useState(estimate.estimatedPages);
+
+  useLayoutEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const sheet = sheetRef.current;
+      if (!sheet) return;
+
+      const measuredHeight = Math.max(A4_RESUME_PAGE_HEIGHT, sheet.scrollHeight);
+      const nextScale = Math.min(
+        1,
+        Math.max(MIN_RESUME_SCALE, (A4_RESUME_PAGE_HEIGHT * data.pageCount) / measuredHeight)
+      );
+      const pages = Math.max(
+        1,
+        Math.min(data.pageCount, Math.ceil((measuredHeight * nextScale) / A4_RESUME_PAGE_HEIGHT))
+      );
+
+      setNaturalHeight(measuredHeight);
+      setScale(nextScale);
+      setRenderedPages(pages);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [data]);
+
+  const scaledHeight = naturalHeight * scale;
+  const viewportHeight = Math.max(A4_RESUME_PAGE_HEIGHT * renderedPages, scaledHeight);
+  const viewportWidth = A4_RESUME_WIDTH * scale;
+
+  return (
+    <div className="min-w-0 space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Badge variant="secondary" className="w-fit">
+          Showing {renderedPages} page{renderedPages > 1 ? "s" : ""}
+        </Badge>
+        <Badge variant="secondary" className="w-fit">
+          Max {data.pageCount} page{data.pageCount > 1 ? "s" : ""}
+        </Badge>
+        <Badge variant="secondary" className="w-fit">
+          {Math.round(scale * 100)}% fit
+        </Badge>
+      </div>
+
+      <div className="w-full max-w-full overflow-auto rounded-2xl border border-white/10 bg-[#dbe4f0]/20 p-3 sm:p-5">
+        <div
+          className="relative mx-auto"
+          style={{
+            width: viewportWidth,
+            height: viewportHeight,
+            backgroundImage:
+              renderedPages > 1
+                ? "repeating-linear-gradient(to bottom, transparent 0, transparent calc(100% - 1px), rgba(148,163,184,0.35) calc(100% - 1px), rgba(148,163,184,0.35) 100%)"
+                : undefined,
+            backgroundSize:
+              renderedPages > 1 ? `100% ${A4_RESUME_PAGE_HEIGHT}px` : undefined,
+          }}
+        >
+          <div
+            ref={sheetRef}
+            className="absolute left-0 top-0 origin-top-left shadow-[0_25px_80px_rgba(15,23,42,0.18)]"
+            style={{
+              width: A4_RESUME_WIDTH,
+              transform: `scale(${scale})`,
+            }}
+          >
+            <ResumeSheet data={data} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ResumePreview({ data, actions }: ResumePreviewProps) {
+  const estimate = useMemo(() => getResumeLayoutEstimate(data), [data]);
+
+  return (
+    <Card className="min-w-0 overflow-hidden bg-white/[0.045] fade-in-up delay-1">
+      <CardHeader className="border-b border-white/10">
+        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="text-white">Resume Live Preview</CardTitle>
+            <CardDescription>
+              Single-column ATS-safe preview with automatic page fitting and recruiter-focused content formatting.
+            </CardDescription>
+          </div>
+          <div className="flex min-w-0 flex-wrap gap-2">
+            <Badge variant="secondary" className="w-fit">
+              {templateStyles[data.template].label}
+            </Badge>
+            <Badge variant="secondary" className="w-fit">
+              ATS Optimized
+            </Badge>
+            <Badge variant="secondary" className="w-fit">
+              Est. {estimate.estimatedPages} page{estimate.estimatedPages > 1 ? "s" : ""}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 p-4 sm:p-6">
+        {actions ? (
+          <div className="action-bar">
+            {actions}
+          </div>
+        ) : null}
+        <ResumeCanvas data={data} />
+      </CardContent>
+    </Card>
+  );
+}
