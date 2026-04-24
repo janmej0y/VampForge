@@ -214,4 +214,4 @@ If you like the project:
 
 ---
 
-Made with 🩵, motion, and late-night builder energy.
+Made By Janmejoy, motion, and late-night builder energy.
