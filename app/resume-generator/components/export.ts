@@ -11,7 +11,16 @@ import {
   getVisibleProjects,
   splitLines,
 } from "./content";
+import { getResumeBackgroundStyles, mixRgb, type RgbColor } from "./resume-backgrounds";
 import { type ResumeData } from "./types";
+
+type ResumePalette = {
+  primary: [number, number, number];
+  secondary: [number, number, number];
+  muted: [number, number, number];
+  line: [number, number, number];
+  soft: [number, number, number];
+};
 
 function triggerBlobDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -45,6 +54,150 @@ function getImageFormatFromDataUrl(dataUrl: string) {
 function getDocxImageTypeFromDataUrl(dataUrl: string) {
   if (dataUrl.startsWith("data:image/jpeg")) return "jpg" as const;
   return "png" as const;
+}
+
+function rgbToHex([red, green, blue]: [number, number, number]) {
+  return [red, green, blue]
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
+}
+
+function getResumePalette(template: ResumeData["template"]): ResumePalette {
+  if (template === "modern") {
+    return {
+      primary: [3, 105, 161],
+      secondary: [15, 23, 42],
+      muted: [71, 85, 105],
+      line: [14, 165, 233],
+      soft: [186, 230, 253],
+    };
+  }
+
+  if (template === "minimal") {
+    return {
+      primary: [67, 56, 202],
+      secondary: [30, 41, 59],
+      muted: [71, 85, 105],
+      line: [99, 102, 241],
+      soft: [224, 231, 255],
+    };
+  }
+
+  if (template === "professional") {
+    return {
+      primary: [15, 118, 110],
+      secondary: [15, 23, 42],
+      muted: [71, 85, 105],
+      line: [20, 184, 166],
+      soft: [204, 251, 241],
+    };
+  }
+
+  return {
+    primary: [180, 83, 9],
+    secondary: [17, 24, 39],
+    muted: [71, 85, 105],
+    line: [245, 158, 11],
+    soft: [254, 243, 199],
+  };
+}
+
+function drawFilledCircle(
+  doc: {
+    setFillColor: (r: number, g: number, b: number) => void;
+    circle: (x: number, y: number, radius: number, style: string) => void;
+  },
+  color: RgbColor,
+  x: number,
+  y: number,
+  radius: number
+) {
+  doc.setFillColor(...color);
+  doc.circle(x, y, radius, "F");
+}
+
+function drawResumePdfBackground(
+  doc: {
+    internal: { pageSize: { getWidth: () => number; getHeight: () => number } };
+    setFillColor: (r: number, g: number, b: number) => void;
+    setDrawColor: (r: number, g: number, b: number) => void;
+    setLineWidth: (width: number) => void;
+    rect: (x: number, y: number, width: number, height: number, style?: string) => void;
+    roundedRect: (
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      rx: number,
+      ry: number,
+      style?: string
+    ) => void;
+    line: (x1: number, y1: number, x2: number, y2: number) => void;
+    circle: (x: number, y: number, radius: number, style: string) => void;
+  },
+  data: ResumeData
+) {
+  if (!data.backgroundEnabled) {
+    return;
+  }
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const { palette, wash, accent, line, frame, band } = getResumeBackgroundStyles(data);
+
+  doc.setFillColor(...palette.paper);
+  doc.rect(0, 0, pageWidth, pageHeight, "F");
+
+  if (data.template === "modern") {
+    doc.setFillColor(...wash);
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
+    doc.setFillColor(...mixRgb(palette.paper, wash, 0.26));
+    doc.rect(pageWidth * 0.42, 0, pageWidth * 0.58, pageHeight, "F");
+    doc.setFillColor(...frame);
+    doc.rect(0, 0, 6, pageHeight, "F");
+    drawFilledCircle(doc, accent, 72, 18, 86);
+    doc.setDrawColor(...line);
+    doc.setLineWidth(0.6);
+    doc.line(40, 168, pageWidth - 40, 168);
+    doc.line(40, pageHeight - 92, pageWidth - 40, pageHeight - 92);
+    return;
+  }
+
+  if (data.template === "minimal") {
+    doc.setDrawColor(...line);
+    doc.setLineWidth(0.45);
+    doc.line(40, 34, pageWidth - 40, 34);
+    doc.line(40, 166, pageWidth - 40, 166);
+    doc.line(40, pageHeight - 34, pageWidth - 40, pageHeight - 34);
+    return;
+  }
+
+  if (data.template === "professional") {
+    doc.setFillColor(...palette.paper);
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
+    doc.setDrawColor(...frame);
+    doc.setFillColor(...mixRgb(wash, palette.paper, 0.55));
+    doc.roundedRect(32, 32, pageWidth - 64, 112, 18, 18, "FD");
+    doc.setDrawColor(...line);
+    doc.setFillColor(...mixRgb(palette.paper, wash, 0.12));
+    doc.roundedRect(32, 172, pageWidth - 64, pageHeight - 204, 22, 22, "FD");
+    doc.setLineWidth(0.45);
+    doc.line(48, 228, pageWidth - 48, 228);
+    doc.line(48, 494, pageWidth - 48, 494);
+    return;
+  }
+
+  doc.setFillColor(...band);
+  doc.rect(0, 0, pageWidth, 144, "F");
+  doc.setFillColor(...wash);
+  doc.rect(pageWidth * 0.38, 0, pageWidth * 0.62, 144, "F");
+  drawFilledCircle(doc, accent, pageWidth - 18, 58, 72);
+  doc.setDrawColor(...frame);
+  doc.setLineWidth(0.55);
+  doc.circle(pageWidth - 10, 136, 46, "S");
+  doc.setDrawColor(...line);
+  doc.line(48, 170, pageWidth - 48, 170);
 }
 
 export function printResumeDocument(data: ResumeData) {
@@ -82,10 +235,17 @@ export async function exportResumeDocx(data: ResumeData) {
   const children: FileChild[] = [];
   const layout = getResumeLayoutEstimate(data);
   const scale = Math.max(MIN_RESUME_SCALE, Math.min(1, layout.scale * 0.97));
+  const palette = getResumePalette(data.template);
+  const primaryHex = rgbToHex(palette.primary);
+  const secondaryHex = rgbToHex(palette.secondary);
+  const mutedHex = rgbToHex(palette.muted);
+  const lineHex = rgbToHex(palette.line);
+  const softHex = rgbToHex(palette.soft);
   const isModern = data.template === "modern";
   const isProfessional = data.template === "professional";
   const isMinimal = data.template === "minimal";
   const isExecutive = data.template === "executive";
+  const hasHeaderPhoto = Boolean(data.includePhoto);
   const titleSize = Math.round(34 * scale);
   const sectionSize = Math.round(18 * scale);
   const bodySize = Math.round(20 * scale);
@@ -93,7 +253,7 @@ export async function exportResumeDocx(data: ResumeData) {
   const contactItems = getHeaderContacts(data);
   const contacts = contactItems.join(" | ");
 
-  if (isExecutive) {
+  if (hasHeaderPhoto) {
     const executivePhotoParagraph = data.photo
       ? new Paragraph({
           alignment: AlignmentType.CENTER,
@@ -115,6 +275,7 @@ export async function exportResumeDocx(data: ResumeData) {
               text: "PHOTO",
               bold: true,
               size: Math.round(18 * scale),
+              color: primaryHex,
             }),
           ],
           spacing: { before: Math.round(150 * scale), after: Math.round(150 * scale) },
@@ -153,6 +314,7 @@ export async function exportResumeDocx(data: ResumeData) {
                         text: data.personalInfo.fullName || "Your Name",
                         bold: true,
                         size: Math.round(34 * scale),
+                        color: secondaryHex,
                       }),
                     ],
                     spacing: { after: Math.round(60 * scale) },
@@ -163,6 +325,7 @@ export async function exportResumeDocx(data: ResumeData) {
                         text: (data.personalInfo.title || "Frontend Developer").toUpperCase(),
                         bold: true,
                         size: Math.round(15 * scale),
+                        color: primaryHex,
                       }),
                     ],
                     spacing: { after: Math.round(70 * scale) },
@@ -170,7 +333,7 @@ export async function exportResumeDocx(data: ResumeData) {
                   ...[contactItems.slice(0, 3), contactItems.slice(3)].filter((group) => group.length > 0).map(
                     (group, index) =>
                       new Paragraph({
-                        children: [new TextRun({ text: group.join(" | "), size: metaSize })],
+                        children: [new TextRun({ text: group.join(" | "), size: metaSize, color: mutedHex })],
                         spacing: { after: index === 0 ? Math.round(24 * scale) : 0 },
                       })
                   ),
@@ -186,10 +349,10 @@ export async function exportResumeDocx(data: ResumeData) {
                   left: 40,
                 },
                 borders: {
-                  top: { style: BorderStyle.SINGLE, size: 6, color: "111827" },
-                  bottom: { style: BorderStyle.SINGLE, size: 6, color: "111827" },
-                  left: { style: BorderStyle.SINGLE, size: 6, color: "111827" },
-                  right: { style: BorderStyle.SINGLE, size: 6, color: "111827" },
+                  top: { style: BorderStyle.SINGLE, size: 6, color: primaryHex },
+                  bottom: { style: BorderStyle.SINGLE, size: 6, color: primaryHex },
+                  left: { style: BorderStyle.SINGLE, size: 6, color: primaryHex },
+                  right: { style: BorderStyle.SINGLE, size: 6, color: primaryHex },
                 },
                 children: [executivePhotoParagraph],
               }),
@@ -200,7 +363,7 @@ export async function exportResumeDocx(data: ResumeData) {
       new Paragraph({
         border: {
           bottom: {
-            color: "111827",
+            color: primaryHex,
             size: 6,
             space: 1,
             style: BorderStyle.SINGLE,
@@ -225,13 +388,14 @@ export async function exportResumeDocx(data: ResumeData) {
                     ? Math.round(32 * scale)
                     : titleSize,
             allCaps: isMinimal,
+            color: secondaryHex,
           }),
         ],
         alignment: isMinimal || isProfessional ? AlignmentType.CENTER : AlignmentType.LEFT,
         border: isMinimal
           ? {
               top: {
-                color: "D1D5DB",
+                color: lineHex,
                 size: 4,
                 space: 1,
                 style: BorderStyle.SINGLE,
@@ -257,6 +421,7 @@ export async function exportResumeDocx(data: ResumeData) {
                     ? Math.round(18 * scale)
                     : bodySize,
             allCaps: isMinimal,
+            color: primaryHex,
           }),
         ],
         alignment: isMinimal || isProfessional ? AlignmentType.CENTER : AlignmentType.LEFT,
@@ -267,13 +432,14 @@ export async function exportResumeDocx(data: ResumeData) {
           new TextRun({
             text: contacts,
             size: metaSize,
+            color: mutedHex,
           }),
         ],
         alignment: isMinimal || isProfessional ? AlignmentType.CENTER : AlignmentType.LEFT,
         border: isMinimal
           ? {
               bottom: {
-                color: "D1D5DB",
+                color: lineHex,
                 size: 4,
                 space: 1,
                 style: BorderStyle.SINGLE,
@@ -282,7 +448,7 @@ export async function exportResumeDocx(data: ResumeData) {
           : isModern
             ? {
                 bottom: {
-                  color: "111827",
+                  color: primaryHex,
                   size: 6,
                   space: 1,
                   style: BorderStyle.SINGLE,
@@ -291,7 +457,7 @@ export async function exportResumeDocx(data: ResumeData) {
             : isProfessional
               ? {
                   bottom: {
-                    color: "6B7280",
+                    color: primaryHex,
                     size: 4,
                     space: 1,
                     style: BorderStyle.SINGLE,
@@ -311,6 +477,7 @@ export async function exportResumeDocx(data: ResumeData) {
             text: label.toUpperCase(),
             bold: true,
             size: sectionSize,
+            color: primaryHex,
           }),
         ],
         alignment: isMinimal ? AlignmentType.CENTER : AlignmentType.LEFT,
@@ -322,7 +489,7 @@ export async function exportResumeDocx(data: ResumeData) {
           ...(isExecutive
             ? {
                 top: {
-                  color: "111827",
+                  color: primaryHex,
                   size: 6,
                   space: 1,
                   style: BorderStyle.SINGLE,
@@ -330,7 +497,7 @@ export async function exportResumeDocx(data: ResumeData) {
               }
             : {
                 bottom: {
-                  color: isMinimal ? "1F2937" : isModern ? "111827" : isProfessional ? "6B7280" : "D1D5DB",
+                  color: isMinimal ? primaryHex : isModern ? primaryHex : isProfessional ? primaryHex : lineHex,
                   size: isMinimal ? 6 : isModern ? 6 : 4,
                   space: 1,
                   style: BorderStyle.SINGLE,
@@ -345,7 +512,7 @@ export async function exportResumeDocx(data: ResumeData) {
     lines.forEach((line) => {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: line, size: bodySize })],
+          children: [new TextRun({ text: line, size: bodySize, color: mutedHex })],
           bullet: { level: 0 },
           spacing: isMinimal ? { after: 40 } : isModern ? { after: 55 } : isProfessional ? { after: 45 } : isExecutive ? { after: 48 } : undefined,
         })
@@ -361,8 +528,8 @@ export async function exportResumeDocx(data: ResumeData) {
     children.push(
       new Paragraph({
         children: [
-          new TextRun({ text: `${category.title}: `, bold: true, size: bodySize }),
-          new TextRun({ text: category.skills.join(", "), size: bodySize }),
+          new TextRun({ text: `${category.title}: `, bold: true, size: bodySize, color: primaryHex }),
+          new TextRun({ text: category.skills.join(", "), size: bodySize, color: mutedHex }),
         ],
         indent: isModern || isMinimal || isProfessional ? { left: 360 } : undefined,
         spacing: isModern ? { after: 40 } : isProfessional ? { after: 28 } : isExecutive ? { after: 36 } : undefined,
@@ -380,6 +547,7 @@ export async function exportResumeDocx(data: ResumeData) {
               text: item.companyName.toUpperCase(),
               bold: true,
               size: Math.round(15 * scale),
+              color: primaryHex,
             }),
           ],
           spacing: { before: Math.round(76 * scale), after: Math.round(18 * scale) },
@@ -394,13 +562,14 @@ export async function exportResumeDocx(data: ResumeData) {
             bold: true,
             size: bodySize,
             allCaps: isMinimal,
+            color: secondaryHex,
           }),
         ],
         spacing: { before: Math.round((isModern ? 105 : isProfessional ? 88 : isExecutive ? (item.companyName ? 0 : 76) : 90) * scale), after: Math.round((isModern ? 42 : isProfessional ? 20 : isExecutive ? 18 : 35) * scale) },
         border: isModern
           ? {
               left: {
-                color: "111827",
+                color: lineHex,
                 size: 6,
                 space: 8,
                 style: BorderStyle.SINGLE,
@@ -409,7 +578,7 @@ export async function exportResumeDocx(data: ResumeData) {
           : isProfessional
             ? {
                 bottom: {
-                  color: "E5E7EB",
+                  color: softHex,
                   size: 4,
                   space: 1,
                   style: BorderStyle.SINGLE,
@@ -418,7 +587,7 @@ export async function exportResumeDocx(data: ResumeData) {
             : isExecutive
               ? {
                   bottom: {
-                    color: "E5E7EB",
+                    color: softHex,
                     size: 4,
                     space: 1,
                     style: BorderStyle.SINGLE,
@@ -436,6 +605,7 @@ export async function exportResumeDocx(data: ResumeData) {
               bold: isModern,
               size: isModern ? metaSize : isProfessional || isExecutive ? Math.round(18 * scale) : bodySize,
               allCaps: isModern,
+              color: primaryHex,
             }),
           ],
           spacing: { after: Math.round((isModern ? 20 : isProfessional ? 10 : isExecutive ? 12 : 12) * scale) },
@@ -451,6 +621,7 @@ export async function exportResumeDocx(data: ResumeData) {
               bold: isModern || isProfessional || isExecutive,
               size: metaSize,
               allCaps: isModern,
+              color: mutedHex,
             }),
           ],
           alignment: AlignmentType.RIGHT,
@@ -478,13 +649,14 @@ export async function exportResumeDocx(data: ResumeData) {
             bold: true,
             size: bodySize,
             allCaps: isMinimal,
+            color: secondaryHex,
           }),
         ],
         spacing: { before: Math.round((isModern ? 105 : isProfessional ? 88 : isExecutive ? 82 : 90) * scale), after: Math.round((isModern ? 42 : isProfessional ? 20 : isExecutive ? 18 : 35) * scale) },
         border: isModern
           ? {
               left: {
-                color: "111827",
+                color: lineHex,
                 size: 6,
                 space: 8,
                 style: BorderStyle.SINGLE,
@@ -493,7 +665,7 @@ export async function exportResumeDocx(data: ResumeData) {
           : isProfessional
             ? {
                 bottom: {
-                  color: "E5E7EB",
+                  color: softHex,
                   size: 4,
                   space: 1,
                   style: BorderStyle.SINGLE,
@@ -502,7 +674,7 @@ export async function exportResumeDocx(data: ResumeData) {
             : isExecutive
               ? {
                   bottom: {
-                    color: "E5E7EB",
+                    color: softHex,
                     size: 4,
                     space: 1,
                     style: BorderStyle.SINGLE,
@@ -520,6 +692,7 @@ export async function exportResumeDocx(data: ResumeData) {
               bold: isModern || isProfessional || isExecutive,
               size: metaSize,
               allCaps: isModern,
+              color: primaryHex,
             }),
           ],
           spacing: { after: Math.round((isModern ? 18 : isProfessional ? 10 : isExecutive ? 12 : 10) * scale) },
@@ -548,18 +721,19 @@ export async function exportResumeDocx(data: ResumeData) {
     children.push(
       new Paragraph({
         children: [
-          new TextRun({
-            text: item.degree || "Degree",
-            bold: true,
-            size: bodySize,
-            allCaps: isMinimal,
-          }),
+            new TextRun({
+              text: item.degree || "Degree",
+              bold: true,
+              size: bodySize,
+              allCaps: isMinimal,
+              color: secondaryHex,
+            }),
         ],
         spacing: { before: Math.round((isModern ? 100 : isProfessional ? 82 : isExecutive ? (item.institutionName ? 0 : 72) : 90) * scale), after: Math.round((isModern ? 36 : isProfessional ? 18 : isExecutive ? 18 : 30) * scale) },
         border: isModern
           ? {
               left: {
-                color: "111827",
+                color: lineHex,
                 size: 6,
                 space: 8,
                 style: BorderStyle.SINGLE,
@@ -568,7 +742,7 @@ export async function exportResumeDocx(data: ResumeData) {
           : isProfessional
             ? {
                 bottom: {
-                  color: "E5E7EB",
+                  color: softHex,
                   size: 4,
                   space: 1,
                   style: BorderStyle.SINGLE,
@@ -577,7 +751,7 @@ export async function exportResumeDocx(data: ResumeData) {
             : isExecutive
               ? {
                   bottom: {
-                    color: "E5E7EB",
+                    color: softHex,
                     size: 4,
                     space: 1,
                     style: BorderStyle.SINGLE,
@@ -595,6 +769,7 @@ export async function exportResumeDocx(data: ResumeData) {
               bold: isModern || isProfessional || isExecutive,
               size: isModern ? metaSize : isProfessional || isExecutive ? Math.round(18 * scale) : bodySize,
               allCaps: isModern,
+              color: primaryHex,
             }),
           ],
           spacing: { after: Math.round((isModern ? 18 : isProfessional ? 10 : isExecutive ? 12 : 20) * scale) },
@@ -610,6 +785,7 @@ export async function exportResumeDocx(data: ResumeData) {
               bold: isModern || isProfessional || isExecutive,
               size: metaSize,
               allCaps: isModern,
+              color: mutedHex,
             }),
           ],
           alignment: AlignmentType.RIGHT,
@@ -651,10 +827,12 @@ export async function exportResumePdf(data: ResumeData) {
   const { default: jsPDF } = await import("jspdf");
   const layout = getResumeLayoutEstimate(data);
   const scale = Math.max(MIN_RESUME_SCALE, Math.min(1, layout.scale * 0.96));
+  const palette = getResumePalette(data.template);
   const isModern = data.template === "modern";
   const isProfessional = data.template === "professional";
   const isMinimal = data.template === "minimal";
   const isExecutive = data.template === "executive";
+  const hasHeaderPhoto = Boolean(data.includePhoto);
   const contactItems = getHeaderContacts(data);
   const doc = new jsPDF({
     unit: "pt",
@@ -668,9 +846,12 @@ export async function exportResumePdf(data: ResumeData) {
   const ensureSpace = (height = 42 * scale) => {
     if (y + height > pageHeight - 44) {
       doc.addPage();
+      drawResumePdfBackground(doc, data);
       y = 48;
     }
   };
+
+  drawResumePdfBackground(doc, data);
 
   const addWrappedText = (
     text: string,
@@ -685,7 +866,7 @@ export async function exportResumePdf(data: ResumeData) {
   ) => {
     const fontSize = (options?.fontSize ?? 11) * scale;
     const indent = options?.indent ?? 0;
-    const color = options?.color ?? [75, 85, 99];
+    const color = options?.color ?? palette.muted;
     const maxWidth = options?.maxWidth ?? pageWidth - marginX * 2 - indent;
     const align = options?.align ?? "left";
     doc.setFont("helvetica", options?.style ?? "normal");
@@ -707,17 +888,13 @@ export async function exportResumePdf(data: ResumeData) {
   const addSectionHeading = (label: string) => {
     ensureSpace(28 * scale);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(
-      isMinimal ? 55 : 17,
-      isMinimal ? 65 : 24,
-      isMinimal ? 81 : 39
-    );
+    doc.setTextColor(...palette.primary);
     doc.setFontSize((isMinimal ? 10 : isModern ? 10.5 : isProfessional ? 10.5 : 11) * scale);
     if (isMinimal) {
       doc.text(label.toUpperCase(), pageWidth / 2, y, { align: "center" });
     } else {
       if (isModern) {
-        doc.setFillColor(17, 24, 39);
+        doc.setFillColor(...palette.line);
         doc.rect(marginX, y - 6 * scale, 26 * scale, 2.5 * scale, "F");
         doc.text(label.toUpperCase(), marginX + 34 * scale, y);
       } else if (isExecutive) {
@@ -733,15 +910,7 @@ export async function exportResumePdf(data: ResumeData) {
     }
     y += 8 * scale;
     doc.setDrawColor(
-      ...(isMinimal
-        ? [31, 41, 55]
-        : isModern
-          ? [17, 24, 39]
-          : isExecutive
-            ? [17, 24, 39]
-          : isProfessional
-            ? [107, 114, 128]
-            : [209, 213, 219]) as [number, number, number]
+      ...(isMinimal ? palette.primary : isModern ? palette.line : isExecutive ? palette.primary : isProfessional ? palette.primary : palette.line)
     );
     doc.line(
       isMinimal ? marginX + 40 : isModern ? marginX + 34 * scale : marginX,
@@ -753,24 +922,24 @@ export async function exportResumePdf(data: ResumeData) {
   };
 
   if (isMinimal) {
-    doc.setDrawColor(209, 213, 219);
+    doc.setDrawColor(...palette.line);
     doc.line(marginX, y - 10, pageWidth - marginX, y - 10);
   } else if (isModern) {
-    doc.setDrawColor(17, 24, 39);
+    doc.setDrawColor(...palette.primary);
     doc.setLineWidth(2);
     doc.line(marginX, y - 8, pageWidth - marginX, y - 8);
     doc.setLineWidth(1);
   } else if (isExecutive) {
-    doc.setDrawColor(17, 24, 39);
+    doc.setDrawColor(...palette.primary);
     doc.setLineWidth(1.2);
     doc.line(marginX, y - 6, pageWidth - marginX, y - 6);
     doc.setLineWidth(1);
   } else if (isProfessional) {
-    doc.setDrawColor(107, 114, 128);
+    doc.setDrawColor(...palette.primary);
     doc.line(marginX, y - 6, pageWidth - marginX, y - 6);
   }
 
-  if (isExecutive) {
+  if (hasHeaderPhoto) {
     const photoWidth = 86 * scale;
     const photoHeight = 116 * scale;
     const photoX = pageWidth - marginX - photoWidth;
@@ -778,7 +947,7 @@ export async function exportResumePdf(data: ResumeData) {
     const textWidth = photoX - marginX - 20 * scale;
 
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(17, 24, 39);
+    doc.setTextColor(...palette.secondary);
     doc.setFontSize(24 * scale);
     doc.text(data.personalInfo.fullName || "Your Name", marginX, y);
     y += 20 * scale;
@@ -786,7 +955,7 @@ export async function exportResumePdf(data: ResumeData) {
     addWrappedText((data.personalInfo.title || "Frontend Developer").toUpperCase(), {
       fontSize: 10.4,
       style: "bold",
-      color: [51, 65, 85],
+      color: palette.primary,
       maxWidth: textWidth,
     });
 
@@ -795,12 +964,12 @@ export async function exportResumePdf(data: ResumeData) {
       .forEach((group) => {
         addWrappedText(group.join(" | "), {
           fontSize: 9.6,
-          color: [75, 85, 99],
+          color: palette.muted,
           maxWidth: textWidth,
         });
       });
 
-    doc.setDrawColor(17, 24, 39);
+    doc.setDrawColor(...palette.primary);
     doc.setLineWidth(1.2);
     doc.rect(photoX, photoY, photoWidth, photoHeight);
     if (data.photo) {
@@ -822,7 +991,7 @@ export async function exportResumePdf(data: ResumeData) {
     y = Math.max(y, photoY + photoHeight) + 8 * scale;
   } else {
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(17, 24, 39);
+    doc.setTextColor(...palette.secondary);
     doc.setFontSize((isMinimal ? 19 : isModern ? 23 : isProfessional ? 22 : 22) * scale);
     if (isMinimal) {
       doc.text((data.personalInfo.fullName || "Your Name").toUpperCase(), pageWidth / 2, y, {
@@ -840,33 +1009,33 @@ export async function exportResumePdf(data: ResumeData) {
     addWrappedText(isMinimal ? (data.personalInfo.title || "Frontend Developer").toUpperCase() : data.personalInfo.title || "Frontend Developer", {
       fontSize: isMinimal ? 10.5 : isModern ? 11 : isProfessional ? 10.8 : 12,
       style: isMinimal ? "normal" : "bold",
-      color: [55, 65, 81],
+      color: palette.primary,
       maxWidth: isMinimal ? pageWidth - marginX * 2 : undefined,
       align: isMinimal || isProfessional ? "center" : "left",
     });
 
     addWrappedText(getHeaderContacts(data).join(" | "), {
       fontSize: isMinimal ? 9.5 : isModern ? 9.8 : isProfessional ? 9.6 : 10,
-      color: [75, 85, 99],
+      color: palette.muted,
       maxWidth: isMinimal ? pageWidth - marginX * 2 : undefined,
       align: isMinimal || isProfessional ? "center" : "left",
     });
   }
 
   if (isMinimal) {
-    doc.setDrawColor(209, 213, 219);
+    doc.setDrawColor(...palette.line);
     doc.line(marginX, y, pageWidth - marginX, y);
     y += 10 * scale;
   } else if (isModern) {
-    doc.setDrawColor(17, 24, 39);
+    doc.setDrawColor(...palette.primary);
     doc.line(marginX, y, pageWidth - marginX, y);
     y += 10 * scale;
   } else if (isExecutive) {
-    doc.setDrawColor(17, 24, 39);
+    doc.setDrawColor(...palette.primary);
     doc.line(marginX, y, pageWidth - marginX, y);
     y += 12 * scale;
   } else if (isProfessional) {
-    doc.setDrawColor(107, 114, 128);
+    doc.setDrawColor(...palette.primary);
     doc.line(marginX, y, pageWidth - marginX, y);
     y += 9 * scale;
   }
@@ -885,32 +1054,32 @@ export async function exportResumePdf(data: ResumeData) {
   getVisibleExperience(data).forEach((item) => {
     ensureSpace(34 * scale);
     if (isModern) {
-      doc.setDrawColor(17, 24, 39);
+      doc.setDrawColor(...palette.line);
       doc.setLineWidth(1.5);
       doc.line(marginX, y - 2 * scale, marginX, y + 12 * scale);
       doc.setLineWidth(1);
     } else if (isExecutive) {
-      doc.setDrawColor(229, 231, 235);
+      doc.setDrawColor(...palette.soft);
       doc.line(marginX, y - 6 * scale, pageWidth - marginX, y - 6 * scale);
     }
     if (isExecutive && item.companyName) {
       addWrappedText(item.companyName.toUpperCase(), {
         fontSize: 8.9,
         style: "bold",
-        color: [71, 85, 105],
+        color: palette.primary,
       });
     }
     addWrappedText(item.role || "Role", {
       fontSize: 11,
       style: "bold",
-      color: [17, 24, 39],
+      color: palette.secondary,
       indent: isModern ? 10 : 0,
     });
     if (item.companyName && !isExecutive) {
       addWrappedText(item.companyName, {
         fontSize: isModern ? 9.6 : isProfessional ? 10 : 10,
         style: isModern ? "bold" : isExecutive ? "bold" : "normal",
-        color: [71, 85, 105],
+        color: palette.primary,
         indent: isModern ? 10 : 0,
       });
     }
@@ -918,7 +1087,7 @@ export async function exportResumePdf(data: ResumeData) {
       addWrappedText(item.duration, {
         fontSize: 9.5,
         style: isModern || isProfessional || isExecutive ? "bold" : "normal",
-        color: [71, 85, 105],
+        color: palette.muted,
         indent: isModern ? 10 : 0,
       });
     }
@@ -938,12 +1107,12 @@ export async function exportResumePdf(data: ResumeData) {
       .join(" | ");
 
     if (isModern) {
-      doc.setDrawColor(17, 24, 39);
+      doc.setDrawColor(...palette.line);
       doc.setLineWidth(1.5);
       doc.line(marginX, y - 2 * scale, marginX, y + 12 * scale);
       doc.setLineWidth(1);
     } else if (isExecutive) {
-      doc.setDrawColor(229, 231, 235);
+      doc.setDrawColor(...palette.soft);
       doc.line(marginX, y - 6 * scale, pageWidth - marginX, y - 6 * scale);
     }
     addWrappedText(
@@ -951,7 +1120,7 @@ export async function exportResumePdf(data: ResumeData) {
       {
         fontSize: 11,
         style: "bold",
-        color: [17, 24, 39],
+        color: palette.secondary,
         indent: isModern ? 10 : 0,
       }
     );
@@ -959,7 +1128,7 @@ export async function exportResumePdf(data: ResumeData) {
       addWrappedText(links, {
         fontSize: isModern ? 9.4 : isProfessional ? 9.7 : 10,
         style: isModern ? "bold" : isExecutive ? "bold" : "normal",
-        color: [71, 85, 105],
+        color: palette.primary,
         indent: isModern ? 10 : 0,
       });
     }
@@ -972,17 +1141,17 @@ export async function exportResumePdf(data: ResumeData) {
   addSectionHeading("Education");
   getVisibleEducation(data).forEach((item) => {
     if (isModern) {
-      doc.setDrawColor(17, 24, 39);
+      doc.setDrawColor(...palette.line);
       doc.setLineWidth(1.5);
       doc.line(marginX, y - 2 * scale, marginX, y + 12 * scale);
       doc.setLineWidth(1);
     } else if (isExecutive) {
-      doc.setDrawColor(229, 231, 235);
+      doc.setDrawColor(...palette.soft);
       doc.line(marginX, y - 6 * scale, pageWidth - marginX, y - 6 * scale);
     }
     if (isExecutive && item.institutionName) {
       addWrappedText(item.institutionName.toUpperCase(), {
-        color: [75, 85, 99],
+        color: palette.primary,
         fontSize: 8.9,
         style: "bold",
         indent: isModern ? 10 : 0,
@@ -991,12 +1160,12 @@ export async function exportResumePdf(data: ResumeData) {
     addWrappedText(item.degree || "Degree", {
       fontSize: 11,
       style: "bold",
-      color: [17, 24, 39],
+      color: palette.secondary,
       indent: isModern ? 10 : 0,
     });
     if (item.institutionName && !isExecutive) {
       addWrappedText(item.institutionName, {
-        color: [75, 85, 99],
+        color: palette.primary,
         fontSize: isModern ? 9.6 : isProfessional ? 10 : 11,
         style: isModern ? "bold" : isExecutive ? "bold" : "normal",
         indent: isModern ? 10 : 0,
@@ -1004,7 +1173,7 @@ export async function exportResumePdf(data: ResumeData) {
     }
     if (item.year) {
       addWrappedText(item.year, {
-        color: [75, 85, 99],
+        color: palette.muted,
         fontSize: 9.5,
         style: isModern || isProfessional || isExecutive ? "bold" : "normal",
         indent: isModern ? 10 : 0,

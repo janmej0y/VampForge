@@ -27,28 +27,28 @@ const templates: Array<{
     id: "modern",
     name: "Modern ATS",
     description:
-      "High-contrast ATS resume with stronger section markers, cleaner alignment, and sharper bullet rhythm.",
+      "Modern ATS resume with a subtle gradient paper, left accent rail, and sharper section rhythm.",
     accent: "from-slate-900 via-slate-700 to-slate-300",
   },
   {
     id: "minimal",
     name: "Minimal ATS",
     description:
-      "Editorial single-column resume with a centered header, tighter rhythm, and restrained divider lines.",
+      "Editorial ATS resume with near-white paper, restrained separators, and clean horizontal structure.",
     accent: "from-slate-500 via-slate-300 to-white",
   },
   {
     id: "professional",
     name: "Professional ATS",
     description:
-      "Classic recruiter-first resume with restrained typography, clear section underlines, and conservative alignment.",
+      "Recruiter-first ATS resume with soft gray paper, subtle boxed sections, and classic corporate structure.",
     accent: "from-slate-950 via-slate-700 to-slate-400",
   },
   {
     id: "executive",
     name: "Executive ATS",
     description:
-      "Refined executive ATS resume with a stronger masthead, formal company-first hierarchy, and leadership-style spacing.",
+      "Premium executive ATS resume with a header band, faint corner watermark, and leadership-style spacing.",
     accent: "from-black via-slate-700 to-slate-300",
   },
 ];
@@ -59,7 +59,8 @@ function Thumbnail({ template }: { template: ResumeTemplate }) {
 
   if (template === "modern") {
     return (
-      <div className={shellClassName}>
+      <div className={`${shellClassName} relative overflow-hidden bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_64%)]`}>
+        <div className="absolute inset-y-0 left-0 w-1.5 bg-sky-200" />
         <div className="border-t-[3px] border-slate-900 pt-2">
           <div className="h-3 w-28 rounded-full bg-slate-900" />
           <div className="mt-2 h-2 w-20 rounded-full bg-slate-500" />
@@ -140,7 +141,7 @@ function Thumbnail({ template }: { template: ResumeTemplate }) {
 
   if (template === "professional") {
     return (
-      <div className={shellClassName}>
+      <div className={`${shellClassName} bg-[#fafafa]`}>
         <div>
           <div className="h-3 w-28 rounded-full bg-slate-800" />
           <div className="mt-2 h-2 w-20 rounded-full bg-slate-500" />
@@ -176,7 +177,9 @@ function Thumbnail({ template }: { template: ResumeTemplate }) {
 
   if (template === "executive") {
     return (
-      <div className={shellClassName}>
+      <div className={`${shellClassName} relative overflow-hidden`}>
+        <div className="absolute inset-x-0 top-0 h-10 bg-[linear-gradient(135deg,#f8fafc_0%,#e0f2fe_45%,#ffffff_100%)]" />
+        <div className="absolute -right-4 top-3 h-14 w-14 rounded-full bg-slate-100" />
         <div className="grid grid-cols-[minmax(0,1fr)_4rem] gap-3 border-b-2 border-slate-900 pb-3">
           <div className="min-w-0">
             <div className="h-3 w-24 rounded-full bg-slate-900" />

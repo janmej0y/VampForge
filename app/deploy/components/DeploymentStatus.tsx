@@ -46,17 +46,17 @@ export function DeploymentStatus({
       <CardHeader className="border-b border-white/10">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <CardTitle className="text-white">Deployment Status Card</CardTitle>
+            <CardTitle className="text-white">GitHub Publish Status</CardTitle>
             <CardDescription>
-              Follow the build pipeline with a stepper, progress bar, and launch result.
+              Follow the GitHub push pipeline with a stepper, progress bar, and final handoff.
             </CardDescription>
           </div>
           <Badge variant={status === "success" ? "success" : "secondary"}>
             {status === "idle"
               ? "Ready"
               : status === "deploying"
-                ? "Deploying"
-                : "Live"}
+                ? "Publishing"
+                : "Pushed"}
           </Badge>
         </div>
       </CardHeader>
@@ -68,17 +68,17 @@ export function DeploymentStatus({
               <div className="text-sm text-muted-foreground">Current Status</div>
               <div className="mt-2 text-xl font-semibold text-white">
                 {status === "idle"
-                  ? "Waiting for deployment"
+                  ? "Waiting for GitHub push"
                   : status === "deploying"
                     ? steps[Math.min(activeStepIndex, steps.length - 1)]?.label
-                    : "Deployment Successful"}
+                    : "Code pushed to GitHub"}
               </div>
               <div className="mt-1 text-sm text-slate-400">
                 {status === "deploying"
-                  ? "Simulating a Vercel-style release flow with smooth frontend-only progress."
+                  ? "Preparing the portfolio files, packaging the repo, and simulating a GitHub push."
                   : status === "success"
-                    ? "Your portfolio is now live on a generated VampForge URL."
-                    : "Press deploy when your settings look right."}
+                    ? "Your portfolio code is ready in GitHub. The user can deploy it on any platform they want."
+                    : "Connect GitHub and push when your settings look right."}
               </div>
             </div>
 
@@ -95,7 +95,7 @@ export function DeploymentStatus({
 
           <div className="mt-5">
             <div className="mb-2 flex items-center justify-between text-sm text-slate-300">
-              <span>Deployment progress</span>
+              <span>Publish progress</span>
               <span>{progress}%</span>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-white/10">
@@ -156,10 +156,10 @@ export function DeploymentStatus({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-lg font-semibold text-white">
-                  Deployment Successful
+                  Portfolio Code Pushed
                 </div>
                 <div className="mt-1 text-sm text-emerald-100/90">
-                  Live URL
+                  GitHub Repository
                 </div>
                 <div className="mt-2 break-all text-sm font-medium text-white">
                   {liveUrl}
@@ -169,16 +169,16 @@ export function DeploymentStatus({
                   <Button variant="secondary" asChild>
                     <a href={liveUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="h-4 w-4" />
-                      Visit Site
+                      Open Repo
                     </a>
                   </Button>
                   <Button variant="outline" onClick={onCopyUrl}>
                     <Copy className="h-4 w-4" />
-                    {copied ? "Copied URL" : "Copy URL"}
+                    {copied ? "Copied Repo URL" : "Copy Repo URL"}
                   </Button>
                   <Button variant="outline" onClick={onRedeploy}>
                     <RotateCcw className="h-4 w-4" />
-                    Redeploy
+                    Push Again
                   </Button>
                 </div>
               </div>

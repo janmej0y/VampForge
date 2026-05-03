@@ -111,10 +111,24 @@ const strongVerbs = [
   "delivered",
   "created",
   "streamlined",
+  "architected",
+  "owned",
+  "scaled",
+  "automated",
+  "improved",
+  "reduced",
+  "increased",
+  "modernized",
+  "integrated",
+  "collaborated",
 ];
 
 const weakOpeners =
   /^(worked on|responsible for|helped with|helped|assisted with|involved in|tasked with)\s+/i;
+const impactSignals =
+  /improv|reduc|increas|streamlin|accelerat|boost|grow|save|cut|raise|scale|support|enable|deliver|launch|ship|moderniz|stabiliz|simplif|automat/i;
+const commonTechPattern =
+  /\b(react|next\.?js|typescript|javascript|node\.?js|tailwind|postgres(?:ql)?|mongodb|mysql|redis|graphql|rest|api|aws|docker|firebase|vercel|figma|playwright|jest|ci\/cd|python|java)\b/i;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -138,6 +152,12 @@ function sentenceCase(value: string) {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 }
 
+function ensurePeriod(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
 function uniqueItems(values: string[]) {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 }
@@ -146,6 +166,14 @@ function containsMetric(value: string) {
   return /\b\d+([.,]\d+)?\s?(%|x|k|m|ms|s|hrs?|hours?|days?|users?|customers?|clients?|projects?|features?)\b/i.test(
     value
   );
+}
+
+function hasImpactEvidence(value: string) {
+  return containsMetric(value) || impactSignals.test(value);
+}
+
+function hasTechEvidence(value: string, skillPool: string[]) {
+  return detectMentionedTechnologies(value, skillPool).length > 0 || commonTechPattern.test(value);
 }
 
 function detectMentionedTechnologies(value: string, skillPool: string[]) {
@@ -209,24 +237,24 @@ function inferTask(lower: string, fallback: string) {
 
 function inferResult(lower: string) {
   if (/performance|load|speed|lazy|cache/.test(lower)) {
-    return "improving load speed and user experience";
+    return "to improve load speed and user experience";
   }
   if (/component|design system|ui/.test(lower)) {
-    return "improving consistency and reducing development time";
+    return "to improve consistency and reduce development time";
   }
   if (/dashboard|analytics|report/.test(lower)) {
-    return "enabling faster decisions and clearer reporting";
+    return "to enable faster decisions and clearer reporting";
   }
   if (/api|backend|integration|auth/.test(lower)) {
-    return "improving reliability and delivery efficiency";
+    return "to improve reliability and delivery efficiency";
   }
   if (/onboard|workflow|automation/.test(lower)) {
-    return "streamlining user workflows and reducing friction";
+    return "to streamline user workflows and reduce friction";
   }
   if (/deploy|release|ci|cd/.test(lower)) {
-    return "accelerating delivery and production readiness";
+    return "to accelerate delivery and production readiness";
   }
-  return "improving usability and product delivery quality";
+  return "to improve usability and product delivery quality";
 }
 
 function buildStrongBullet(value: string, skillPool: string[], fallbackTask: string) {
@@ -239,13 +267,15 @@ function buildStrongBullet(value: string, skillPool: string[], fallbackTask: str
 
   if (
     strongVerbs.some((item) => lower.startsWith(item)) &&
-    /using\s+/i.test(cleaned) &&
-    (containsMetric(cleaned) || /improv|reduc|increas|streamlin|accelerat|support|enabl/.test(lower))
+    cleaned.length >= 45 &&
+    (hasTechEvidence(cleaned, skillPool) || hasImpactEvidence(cleaned))
   ) {
-    return sentenceCase(cleaned.endsWith(".") ? cleaned : `${cleaned}.`);
+    return ensurePeriod(sentenceCase(cleaned));
   }
 
-  return `${verb} ${task} using ${techs || "modern web technologies"}, ${result}.`
+  const techClause = techs ? ` with ${techs}` : "";
+
+  return `${verb} ${task}${techClause} ${result}.`
     .replace(/\s+/g, " ")
     .replace(/\s,\s/g, ", ")
     .trim();
@@ -335,19 +365,17 @@ function isWeakBullet(value: string) {
   const cleaned = trimBullet(value).toLowerCase();
 
   return (
-    cleaned.length < 55 ||
+    cleaned.length < 42 ||
     weakOpeners.test(cleaned) ||
     !strongVerbs.some((verb) => cleaned.startsWith(verb)) ||
-    !/using\s+/i.test(cleaned) ||
-    !/improv|reduc|increas|streamlin|accelerat|support|enabl|optimiz|deliver|launch/.test(
-      cleaned
-    )
+    (!hasImpactEvidence(cleaned) && !commonTechPattern.test(cleaned))
   );
 }
 
 function normalizeSummary(summary: string) {
   return splitLines(summary)
-    .slice(0, 4)
+    .map((line) => ensurePeriod(sentenceCase(line.replace(/\s+/g, " ").trim())))
+    .slice(0, 3)
     .join("\n");
 }
 
@@ -413,17 +441,23 @@ export function enhanceExperienceItems(
       ...detectMentionedTechnologies(item.description, resumeSkills),
     ]);
 
-    const bullets = splitLines(item.description).map((line) =>
-      enhanceBullet(line, {
+    const bullets = splitLines(item.description).map((line) => {
+      if (!isWeakBullet(line)) {
+        return ensurePeriod(sentenceCase(trimBullet(line)));
+      }
+
+      return enhanceBullet(line, {
         role: item.role,
         company: item.companyName,
         resumeSkills: skillPool,
-      })
-    );
+      });
+    });
 
     return {
       ...item,
-      description: ensureExperienceBulletCount(bullets, item, skillPool).join("\n"),
+      description: ensureExperienceBulletCount(bullets, item, skillPool)
+        .slice(0, 4)
+        .join("\n"),
     };
   });
 }
@@ -434,17 +468,23 @@ export function enhanceProjectItems(
 ) {
   return items.map((item) => {
     const skillPool = uniqueItems([...item.techStack, ...resumeSkills]);
-    const bullets = splitLines(item.description).map((line) =>
-      enhanceBullet(line, {
+    const bullets = splitLines(item.description).map((line) => {
+      if (!isWeakBullet(line)) {
+        return ensurePeriod(sentenceCase(trimBullet(line)));
+      }
+
+      return enhanceBullet(line, {
         project: item.projectName,
         techStack: skillPool,
         resumeSkills: skillPool,
-      })
-    );
+      });
+    });
 
     return {
       ...item,
-      description: ensureProjectBulletCount(bullets, item, skillPool).join("\n"),
+      description: ensureProjectBulletCount(bullets, item, skillPool)
+        .slice(0, 3)
+        .join("\n"),
     };
   });
 }
@@ -471,9 +511,9 @@ export function generateSmartSummary(data: ResumeData) {
 
   return normalizeSummary(
     [
-      `${role} with experience building scalable web applications using ${frontendPhrase}.`,
+      `${role} with experience building scalable web applications with ${frontendPhrase}.`,
       `Skilled in ${systemsPhrase}.`,
-      "Focused on delivering fast, user-centric applications with clean architecture and measurable product impact.",
+      "Focused on shipping reliable user experiences, maintainable systems, and measurable product outcomes.",
     ].join("\n")
   );
 }
@@ -483,10 +523,12 @@ export function prepareResumeForOutput(data: ResumeData): ResumeData {
 
   return {
     ...data,
+    skills: uniqueItems(data.skills).slice(0, 16),
+    certifications: uniqueItems(data.certifications),
     summary: normalizedSummary || generateSmartSummary(data),
     experience: enhanceExperienceItems(data.experience, data.skills),
     projects: enhanceProjectItems(data.projects, data.skills),
-    includePhoto: data.template === "executive",
+    includePhoto: Boolean(data.includePhoto && data.photo),
     atsMode: true,
   };
 }
@@ -514,13 +556,12 @@ export function calculateResumeInsights(data: ResumeData): ResumeInsights {
     !data.personalInfo.title ? "Header: target role" : "",
     !data.personalInfo.email ? "Header: email" : "",
     !data.personalInfo.phone ? "Header: phone" : "",
+    !data.personalInfo.location ? "Header: location" : "",
     !data.personalInfo.github ? "Header: GitHub" : "",
     !data.personalInfo.linkedin ? "Header: LinkedIn" : "",
-    !data.personalInfo.website ? "Header: portfolio" : "",
     !normalizeSummary(data.summary) ? "Professional Summary" : "",
-    categorizedSkills.length < 1 ? "Skills" : "",
+    data.skills.length < 5 ? "Skills" : "",
     experienceItems.length === 0 ? "Work Experience" : "",
-    projectItems.length === 0 ? "Projects" : "",
     educationItems.length === 0 ? "Education" : "",
   ].filter(Boolean);
 
@@ -535,89 +576,131 @@ export function calculateResumeInsights(data: ResumeData): ResumeInsights {
 
   const qualityChecks: ResumeQualityCheck[] = [
     {
-      label: "No weak wording",
+      label: "Complete recruiter header",
       passed:
-        !allBullets.some((bullet) =>
-          /worked on|responsible for|helped with|helped|assisted with/i.test(bullet)
-        ),
-      detail: "Replace weak wording with action-based bullets that show ownership.",
+        Boolean(data.personalInfo.fullName) &&
+        Boolean(data.personalInfo.title) &&
+        Boolean(data.personalInfo.email) &&
+        Boolean(data.personalInfo.phone) &&
+        Boolean(data.personalInfo.location),
+      detail: "Include full name, role, email, phone, and location in the header.",
     },
     {
-      label: "No empty sections",
-      passed: missingSections.length === 0,
-      detail:
-        "Header, summary, skills, experience, projects, and education all need complete content.",
+      label: "Professional summary is focused",
+      passed: (() => {
+        const lines = splitLines(data.summary);
+        const length = normalizeSummary(data.summary).length;
+        return lines.length >= 2 && lines.length <= 3 && length >= 120 && length <= 420;
+      })(),
+      detail: "Keep the summary to 2-3 concise lines with role fit, strengths, and business value.",
     },
     {
-      label: "At least 2 projects",
-      passed: projectItems.length >= 2,
-      detail: "Add at least two strong projects with GitHub or live links where possible.",
+      label: "Skills are ATS searchable",
+      passed: data.skills.length >= 8 && categorizedSkills.length >= 2,
+      detail: "Show at least 8 relevant skills across 2 or more categories.",
     },
     {
-      label: "At least 3 skill categories",
-      passed: categorizedSkills.length >= 3,
-      detail: "Show at least three skill categories such as frontend, backend, database, and tools.",
-    },
-    {
-      label: "Strong bullets in each experience section",
+      label: "Experience bullets are outcome-driven",
       passed:
         experienceItems.length > 0 &&
         experienceItems.every((item) => {
           const bullets = splitLines(item.description);
-          return bullets.length >= 3 && bullets.length <= 5 && bullets.every((bullet) => !isWeakBullet(bullet));
+          return (
+            bullets.length >= 2 &&
+            bullets.length <= 4 &&
+            bullets.every((bullet) => !isWeakBullet(bullet)) &&
+            bullets.some((bullet) => hasImpactEvidence(bullet))
+          );
         }),
-      detail: "Each role needs 3-5 bullets that start with a strong verb, include tech, and show impact.",
+      detail: "Each role should have 2-4 clear bullets with strong verbs and impact evidence.",
+    },
+    {
+      label: "Projects show proof of work",
+      passed:
+        projectItems.length >= 1 &&
+        projectItems.every((item) => {
+          const bullets = splitLines(item.description);
+          return bullets.length >= 2 && bullets.length <= 3;
+        }),
+      detail: "Include at least one solid project with 2-3 bullets and links when available.",
+    },
+    {
+      label: "Links support credibility",
+      passed:
+        Boolean(data.personalInfo.linkedin) &&
+        (Boolean(data.personalInfo.github) || Boolean(data.personalInfo.website)),
+      detail: "LinkedIn plus GitHub or portfolio makes the resume more credible for recruiters.",
     },
   ];
 
-  const blockingIssues = qualityChecks
-    .filter((item) => !item.passed)
-    .map((item) => item.detail);
+  const blockingIssues = [
+    !data.personalInfo.fullName || !data.personalInfo.email || !data.personalInfo.phone
+      ? "Complete the top header with your name, email, and phone."
+      : "",
+    !normalizeSummary(data.summary)
+      ? "Add a short professional summary before exporting."
+      : "",
+    data.skills.length < 5
+      ? "Add more relevant skills so the resume is ATS searchable."
+      : "",
+    experienceItems.length === 0
+      ? "Add at least one work experience entry."
+      : "",
+    experienceItems.length > 0 &&
+    experienceItems.every((item) => splitLines(item.description).every((bullet) => isWeakBullet(bullet)))
+      ? "Rewrite experience bullets to show ownership and outcomes."
+      : "",
+  ].filter(Boolean);
 
   const strengths = [
-    categorizedSkills.length >= 3 ? "Skills are grouped into ATS-friendly categories." : "",
-    projectItems.length >= 2 ? "Project coverage is strong enough for a fast recruiter scan." : "",
+    categorizedSkills.length >= 2 ? "Skills are grouped into ATS-friendly categories." : "",
+    projectItems.length >= 1 ? "Project coverage supports a faster recruiter scan." : "",
     experienceItems.length > 0 &&
-    experienceItems.every((item) => splitLines(item.description).length >= 3)
-      ? "Each experience entry has enough bullet depth for credibility."
+    experienceItems.every((item) => splitLines(item.description).length >= 2)
+      ? "Experience entries have enough bullet depth for credibility."
       : "",
-    weakBulletCount === 0 ? "Bullets use stronger action verbs, technology, and impact." : "",
+    weakBulletCount === 0 ? "Bullets are action-oriented and easier for HR to scan." : "",
   ].filter(Boolean);
 
   const improvementSuggestions = [
-    qualityChecks.find((item) => item.label === "No weak wording")?.passed
+    qualityChecks.find((item) => item.label === "Experience bullets are outcome-driven")?.passed
       ? ""
-      : "Rewrite weak bullets so each one starts with a strong action verb and shows result.",
-    projectItems.length < 2
-      ? "Add at least one more project with 2-3 impact-focused bullets."
+      : "Rewrite weak bullets so each one shows ownership, context, and outcome.",
+    projectItems.length < 1
+      ? "Add at least one project with strong impact bullets and links."
       : "",
-    categorizedSkills.length < 3
-      ? "Expand your skills so at least three categories are represented."
+    categorizedSkills.length < 2
+      ? "Expand the skills section so it covers multiple ATS-searchable categories."
       : "",
     weakBulletCount > 0
-      ? `Strengthen ${weakBulletCount} bullet${weakBulletCount > 1 ? "s" : ""} with tech context and outcomes.`
+      ? `Strengthen ${weakBulletCount} bullet${weakBulletCount > 1 ? "s" : ""} with clearer outcomes and stronger detail.`
       : "",
-    !data.personalInfo.github || !data.personalInfo.linkedin || !data.personalInfo.website
-      ? "Complete the header with GitHub, LinkedIn, and portfolio links."
+    !data.personalInfo.linkedin || (!data.personalInfo.github && !data.personalInfo.website)
+      ? "Complete the header with LinkedIn plus GitHub or portfolio links."
+      : "",
+    educationItems.length === 0
+      ? "Add education details so the resume feels complete for HR review."
       : "",
   ].filter(Boolean);
 
   const score = clamp(
-    60 +
-      qualityChecks.filter((item) => item.passed).length * 8 +
-      (categorizedSkills.length >= 3 ? 6 : 0) +
-      (projectItems.length >= 2 ? 6 : 0) -
-      weakBulletCount * 4,
+    58 +
+      qualityChecks.filter((item) => item.passed).length * 7 +
+      (categorizedSkills.length >= 2 ? 6 : 0) +
+      (projectItems.length >= 1 ? 5 : 0) +
+      (weakBulletCount === 0 ? 6 : 0) -
+      weakBulletCount * 3,
     0,
     100
   );
 
   const atsScore = clamp(
-    68 +
-      (categorizedSkills.length >= 3 ? 6 : 0) +
-      (projectItems.length >= 2 ? 6 : 0) +
-      (weakBulletCount === 0 ? 8 : -8) -
-      missingSections.length * 5,
+    64 +
+      (categorizedSkills.length >= 2 ? 8 : 0) +
+      (Boolean(data.personalInfo.email) && Boolean(data.personalInfo.phone) ? 6 : 0) +
+      (normalizeSummary(data.summary) ? 6 : 0) +
+      (weakBulletCount === 0 ? 8 : -6) -
+      missingSections.length * 4,
     0,
     100
   );

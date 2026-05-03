@@ -61,7 +61,7 @@ function CreativeCursor({
 
   return (
     <div
-      className={`group/cursor relative cursor-none ${className}`}
+      className={`group/cursor relative cursor-none [&_a]:cursor-pointer [&_button]:cursor-pointer [&_input]:cursor-text [&_textarea]:cursor-text ${className}`}
       onPointerMove={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
         setPosition({ x: event.clientX - rect.left, y: event.clientY - rect.top });
@@ -171,6 +171,12 @@ function OrbitPortfolioPreview({ data }: { data: PortfolioData }) {
           transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
         />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_10%,rgba(103,232,249,0.22),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.2),transparent_26%),linear-gradient(180deg,#050713,#090d1f_55%,#050713)]" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute right-[3%] top-28 select-none text-[clamp(10rem,22vw,19rem)] font-black leading-none tracking-[-0.12em] text-cyan-100/[0.075] blur-[1px]"
+        >
+          {initials}
+        </div>
         <motion.div
           className="pointer-events-none absolute left-[18%] top-[20%] h-24 w-24 rounded-full bg-cyan-300/20 blur-3xl"
           animate={{ x: [0, 40, 0], y: [0, -26, 0] }}

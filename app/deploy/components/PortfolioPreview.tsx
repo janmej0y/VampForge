@@ -29,14 +29,14 @@ export function PortfolioPreview({
           <div className="min-w-0">
             <CardTitle className="text-slate-950">Portfolio Preview</CardTitle>
             <CardDescription>
-              Review a polished animated launch preview before deploying.
+              Review the portfolio package and repository target before pushing code.
             </CardDescription>
           </div>
           <div className="flex min-w-0 flex-wrap gap-2">
             <Button variant="secondary" asChild>
               <a href={previewUrl} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                Preview
+                Open Repo Target
               </a>
             </Button>
             <Button variant="outline" asChild>
@@ -60,7 +60,7 @@ export function PortfolioPreview({
               <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
               <div className="ml-2 min-w-0 truncate rounded-full border border-sky-200 bg-white/80 px-3 py-1 font-mono text-[11px] text-slate-500">
-                {portfolioName.toLowerCase().replace(/\s+/g, "-")}.vampforge.app
+                {previewUrl.replace(/^https?:\/\//, "")}
               </div>
             </div>
 
@@ -72,7 +72,7 @@ export function PortfolioPreview({
                 {portfolioName}
               </div>
               <div className="max-w-xl text-sm leading-7 text-slate-600">
-                A production-ready developer portfolio with featured builds, clear positioning, and recruiter-friendly storytelling.
+                A polished portfolio source package with recruiter-friendly content, ready to be pushed to GitHub and deployed anywhere.
               </div>
             </div>
           </div>
@@ -98,7 +98,7 @@ export function PortfolioPreview({
                   <div className="min-w-0 truncate text-sm font-semibold text-slate-900">{item}</div>
                 </div>
                 <div className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Polished portfolio content staged for instant deployment.
+                  Polished portfolio content prepared for GitHub handoff.
                 </div>
               </div>
             ))}

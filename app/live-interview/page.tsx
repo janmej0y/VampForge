@@ -209,7 +209,7 @@ export default function LiveInterviewPage() {
 
   const beginInterview = async (nextSetup = setup) => {
     if (!geminiApiKey.trim()) {
-      setStartError("Add your Gemini API key in settings or paste it here first.");
+      setStartError("Add your own Gemini API key in settings or paste it here first.");
       return;
     }
 
@@ -367,7 +367,7 @@ export default function LiveInterviewPage() {
     }
 
     if (!geminiApiKey.trim()) {
-      setEvaluationError("Add your Gemini API key before submitting an answer.");
+      setEvaluationError("Add your own Gemini API key before submitting an answer.");
       return;
     }
 
@@ -475,7 +475,7 @@ export default function LiveInterviewPage() {
       <PageHeader
         badge="Live Interview"
         title="Real Company Interview Mode"
-        description={`Practice a voice and camera interview in the style of ${companyLabel}, powered by your own Gemini API key.`}
+        description={`Practice a voice and camera interview in the style of ${companyLabel}. The user adds their own Gemini API key only when they want AI-generated interview questions and feedback.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="success" className="gap-2">

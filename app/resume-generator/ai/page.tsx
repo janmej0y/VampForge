@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   AlertTriangle,
   ArrowLeft,
   Bot,
@@ -15,6 +16,7 @@ import {
   FileText,
   Gauge,
   History,
+  ImageUp,
   KeyRound,
   Layers3,
   ListChecks,
@@ -62,9 +64,12 @@ import {
   type EducationItem,
   type ExperienceItem,
   type ProjectItem,
+  type ResumeBackgroundIntensity,
+  type ResumeBackgroundTheme,
   type ResumeData,
   type ResumePageCount,
   type ResumeTemplate,
+  type UploadStatus,
 } from "../components/types";
 
 type AiResumeForm = {
@@ -92,6 +97,12 @@ type AiResumeForm = {
   template: ResumeTemplate;
   pageCount: ResumePageCount;
   strictOnePage: boolean;
+  photo: string | null;
+  photoPosition: number;
+  includePhoto: boolean;
+  backgroundEnabled: boolean;
+  backgroundTheme: ResumeBackgroundTheme;
+  backgroundIntensity: ResumeBackgroundIntensity;
 };
 
 type GeminiResponse = {
@@ -138,6 +149,9 @@ const emptyResumeData: ResumeData = {
   photo: null,
   photoPosition: 18,
   includePhoto: false,
+  backgroundEnabled: true,
+  backgroundTheme: "blue",
+  backgroundIntensity: "low",
   atsMode: true,
 };
 
@@ -163,9 +177,20 @@ const initialForm: AiResumeForm = {
   education: "",
   projects: "",
   certifications: [],
-  template: "modern",
+  template: "professional",
   pageCount: 1,
   strictOnePage: true,
+  photo: null,
+  photoPosition: 18,
+  includePhoto: false,
+  backgroundEnabled: true,
+  backgroundTheme: "blue",
+  backgroundIntensity: "low",
+};
+
+const idleUploadStatus: UploadStatus = {
+  state: "idle",
+  progress: 0,
 };
 
 type WizardStepId = "profile" | "target" | "experience" | "sections" | "review";
@@ -218,6 +243,23 @@ const industryOptions = [
   "AI/ML",
   "Healthtech",
   "Edtech",
+];
+
+const backgroundThemeOptions: Array<{
+  value: ResumeBackgroundTheme;
+  label: string;
+}> = [
+  { value: "blue", label: "Blue" },
+  { value: "purple", label: "Purple" },
+  { value: "neutral", label: "Neutral" },
+];
+
+const backgroundIntensityOptions: Array<{
+  value: ResumeBackgroundIntensity;
+  label: string;
+}> = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
 ];
 
 const stopWords = new Set([
@@ -299,6 +341,99 @@ function FormSection({
   );
 }
 
+function ToggleCard({
+  checked,
+  label,
+  description,
+  onChange,
+}: {
+  checked: boolean;
+  label: string;
+  description: string;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 transition hover:bg-white/[0.07]">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span
+        aria-hidden="true"
+        className={`mt-0.5 flex h-7 w-12 shrink-0 items-center rounded-full border p-1 transition ${
+          checked
+            ? "border-cyan-300/40 bg-cyan-300/20"
+            : "border-white/10 bg-slate-950/65"
+        }`}
+      >
+        <span
+          className={`h-5 w-5 rounded-full transition ${
+            checked
+              ? "translate-x-5 bg-cyan-200 shadow-[0_0_18px_rgba(103,232,249,0.55)]"
+              : "translate-x-0 bg-slate-500"
+          }`}
+        />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
+          {label}
+          <span className="rounded-full border border-white/10 bg-white/[0.055] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+            {checked ? "On" : "Off"}
+          </span>
+        </div>
+        <div className="mt-1 text-xs leading-6 text-muted-foreground">
+          {description}
+        </div>
+      </div>
+    </label>
+  );
+}
+
+function UploadMeter({ status }: { status: UploadStatus }) {
+  if (status.state === "idle") {
+    return null;
+  }
+
+  const isComplete = status.state === "complete";
+  const isError = status.state === "error";
+  const icon = isComplete ? (
+    <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+  ) : isError ? (
+    <AlertCircle className="h-4 w-4 text-rose-300" />
+  ) : (
+    <Loader2 className="h-4 w-4 animate-spin text-cyan-200" />
+  );
+
+  return (
+    <div className="space-y-2 rounded-2xl border border-white/10 bg-slate-950/35 p-3">
+      <div className="flex min-w-0 items-center justify-between gap-3 text-xs">
+        <div className="flex min-w-0 items-center gap-2 text-slate-200">
+          {icon}
+          <span className="truncate">{status.message ?? "Uploading..."}</span>
+        </div>
+        <span className={isError ? "text-rose-200" : "text-cyan-100"}>
+          {isError ? "Retry" : `${status.progress}%`}
+        </span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full border border-white/10 bg-slate-950/70">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${
+            isError
+              ? "bg-rose-400"
+              : "bg-[linear-gradient(90deg,#22d3ee,#a7f3d0,#facc15)]"
+          }`}
+          style={{ width: `${Math.max(4, status.progress)}%` }}
+        />
+      </div>
+      {status.fileName ? (
+        <div className="truncate text-[11px] text-slate-500">{status.fileName}</div>
+      ) : null}
+    </div>
+  );
+}
+
 function asString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -325,6 +460,72 @@ function extractJson(value: string) {
   }
 
   return trimmed;
+}
+
+function readFileAsDataUrl(
+  file: File,
+  onProgress?: (progress: number) => void
+) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onprogress = (event) => {
+      if (!onProgress) return;
+
+      if (!event.lengthComputable) {
+        onProgress(45);
+        return;
+      }
+
+      onProgress(Math.min(78, Math.round((event.loaded / event.total) * 78)));
+    };
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        onProgress?.(82);
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error("Unable to read image file."));
+    };
+
+    reader.onerror = () => reject(reader.error ?? new Error("Unable to read image file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function normalizePhotoDataUrl(source: string) {
+  return new Promise<string>((resolve, reject) => {
+    const image = new window.Image();
+
+    image.onload = () => {
+      const maxDimension = 1600;
+      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        reject(new Error("Unable to prepare uploaded image."));
+        return;
+      }
+
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.86));
+    };
+
+    image.onerror = () => reject(new Error("Unable to load uploaded image."));
+    image.src = source;
+  });
 }
 
 function normalizeGeneratedResume(
@@ -381,6 +582,12 @@ function normalizeGeneratedResume(
       : form.certifications,
     template: form.template,
     pageCount: form.pageCount,
+    photo: form.photo,
+    photoPosition: form.photoPosition,
+    includePhoto: form.includePhoto,
+    backgroundEnabled: form.backgroundEnabled,
+    backgroundTheme: form.backgroundTheme,
+    backgroundIntensity: form.backgroundIntensity,
   };
 }
 
@@ -472,11 +679,14 @@ function applyLocalResumeUpgrade(data: ResumeData, mode: "stronger" | "shorter" 
   if (mode === "stronger" || mode === "ats") {
     return {
       ...data,
-      summary: data.summary || `${data.personalInfo.title || "Developer"} focused on building reliable, recruiter-ready product experiences.`,
+      summary:
+        data.summary ||
+        `${data.personalInfo.title || "Developer"} focused on shipping reliable product experiences.\nStrong in modern web development, collaboration, and delivery quality.\nKnown for clean execution, maintainable systems, and recruiter-friendly communication.`,
       experience: enhanceExperienceItems(data.experience, data.skills),
       projects: enhanceProjectItems(data.projects, data.skills),
       atsMode: true,
       pageCount: mode === "ats" ? 1 : data.pageCount,
+      template: mode === "ats" ? "professional" : data.template,
     };
   }
 
@@ -509,7 +719,7 @@ function applyLocalResumeUpgrade(data: ResumeData, mode: "stronger" | "shorter" 
 }
 
 function buildResumePrompt(form: AiResumeForm) {
-  return `Create an ATS-safe resume as strict JSON.
+  return `Create a professional, ATS-friendly software resume as strict JSON.
 
 Target role: ${form.targetRole || form.title}
 Target company: ${form.targetCompany || "Not specified"}
@@ -519,6 +729,19 @@ Writing tone: ${form.tone}
 Preferred template: ${form.template}
 Maximum pages: ${form.strictOnePage ? 1 : form.pageCount}
 Strict one-page mode: ${form.strictOnePage ? "Yes, prioritize concise content that fits one page." : "No, use the selected page limit."}
+
+Output rules:
+- Keep the resume concise, readable, and recruiter-friendly.
+- Use plain English and standard ATS-safe headings.
+- Do not use tables, columns, emojis, icons, ratings, or decorative language.
+- Summary must be 2-3 concise lines, not first person, not generic fluff.
+- Experience bullets must be 2-4 bullets per role.
+- Project bullets must be 2-3 bullets per project.
+- Start bullets with strong action verbs.
+- Mention technologies only when relevant.
+- Include metrics only when the provided information supports them.
+- Do not repeat the same wording across bullets.
+- Do not invent company names, degrees, dates, certifications, links, or metrics.
 
 Personal info:
 Name: ${form.fullName}
@@ -558,20 +781,20 @@ Return only JSON with this shape:
     "linkedin": "string",
     "github": "string"
   },
-  "summary": "3-4 newline-separated resume summary bullets with metrics where credible",
-  "skills": ["8-16 ATS keywords"],
+  "summary": "2-3 newline-separated professional summary lines",
+  "skills": ["8-16 ATS keywords drawn only from the candidate profile and target job"],
   "experience": [
     {
       "companyName": "string",
       "role": "string",
       "duration": "string",
-      "description": "3-5 newline-separated impact bullets"
+      "description": "2-4 newline-separated impact bullets"
     }
   ],
   "projects": [
     {
       "projectName": "string",
-      "description": "2-4 newline-separated impact bullets",
+      "description": "2-3 newline-separated impact bullets",
       "techStack": ["string"],
       "githubLink": "string",
       "liveLink": "string"
@@ -598,14 +821,38 @@ export default function AiResumeGeneratorPage() {
   const [error, setError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState<"pdf" | "docx" | null>(null);
+  const [photoUpload, setPhotoUpload] = useState<UploadStatus>(idleUploadStatus);
   const [lastGeneratedAt, setLastGeneratedAt] = useState<Date | null>(null);
   const [activeStep, setActiveStep] = useState<WizardStepId>("profile");
   const [previewMode, setPreviewMode] = useState<PreviewMode>("form");
   const [versionHistory, setVersionHistory] = useState<Array<{ label: string; data: ResumeData }>>([]);
 
   const previewData = useMemo(
-    () => prepareResumeForOutput(resumeData ?? { ...emptyResumeData, template: form.template, pageCount: form.pageCount }),
-    [form.pageCount, form.template, resumeData]
+    () =>
+      prepareResumeForOutput(
+        resumeData ?? {
+          ...emptyResumeData,
+          template: form.template,
+          pageCount: form.pageCount,
+          photo: form.photo,
+          photoPosition: form.photoPosition,
+          includePhoto: form.includePhoto,
+          backgroundEnabled: form.backgroundEnabled,
+          backgroundTheme: form.backgroundTheme,
+          backgroundIntensity: form.backgroundIntensity,
+        }
+      ),
+    [
+      form.backgroundEnabled,
+      form.backgroundIntensity,
+      form.backgroundTheme,
+      form.includePhoto,
+      form.pageCount,
+      form.photo,
+      form.photoPosition,
+      form.template,
+      resumeData,
+    ]
   );
   const insights = useMemo(
     () => calculateResumeInsights(previewData),
@@ -635,12 +882,66 @@ export default function AiResumeGeneratorPage() {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
+  const handlePhotoChange = async (file: File | null) => {
+    if (!file) {
+      updateForm("photo", null);
+      updateForm("includePhoto", false);
+      setPhotoUpload(idleUploadStatus);
+      return;
+    }
+
+    setPhotoUpload({
+      state: "uploading",
+      progress: 2,
+      fileName: file.name,
+      message: "Uploading resume photo...",
+    });
+
+    try {
+      const source = await readFileAsDataUrl(file, (progress) => {
+        setPhotoUpload({
+          state: "uploading",
+          progress,
+          fileName: file.name,
+          message: "Uploading resume photo...",
+        });
+      });
+
+      setPhotoUpload({
+        state: "processing",
+        progress: 88,
+        fileName: file.name,
+        message: "Optimizing photo for export...",
+      });
+
+      const normalizedPhoto = await normalizePhotoDataUrl(source);
+      updateForm("photo", normalizedPhoto);
+      updateForm("includePhoto", true);
+      setPhotoUpload({
+        state: "complete",
+        progress: 100,
+        fileName: file.name,
+        message: "Photo upload complete.",
+      });
+      window.setTimeout(() => setPhotoUpload(idleUploadStatus), 1800);
+    } catch {
+      updateForm("photo", null);
+      updateForm("includePhoto", false);
+      setPhotoUpload({
+        state: "error",
+        progress: 0,
+        fileName: file.name,
+        message: "Photo upload failed. Try a smaller PNG or JPG.",
+      });
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
     if (!form.apiKey.trim()) {
-      setError("Add your Gemini API key before generating the resume.");
+      setError("Add your own Gemini API key before generating the resume.");
       return;
     }
 
@@ -801,7 +1102,7 @@ export default function AiResumeGeneratorPage() {
       <PageHeader
         badge="AI Resume Generator"
         title="Build a complete resume from your details using your Gemini key"
-        description="Add your profile, target role, background notes, and preferred template. Gemini drafts the content while VampForge keeps the resume preview and exports ATS-safe."
+        description="Add your profile, target role, background notes, and preferred template. The user adds their own Gemini key only when using AI drafting, while VampForge keeps the preview and exports ATS-safe."
         action={
           <div className="flex flex-col gap-3 lg:items-end">
             <div className="flex flex-wrap items-center gap-2">
@@ -908,36 +1209,115 @@ export default function AiResumeGeneratorPage() {
                   icon={KeyRound}
                   step="Step 01"
                   title="Profile and Gemini Access"
-                  description="Add your Gemini key and the resume header details recruiters see first."
+                  description="Add your own Gemini key only if you want AI drafting, then fill recruiter-visible header details and an optional resume photo."
                 >
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-200">Gemini API Key</label>
-                      <Input
-                        type="password"
-                        value={form.apiKey}
-                        placeholder="Paste your Gemini API key"
-                        onChange={(event) => updateForm("apiKey", event.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-200">Model</label>
-                      <Input
-                        value={form.model}
-                        placeholder="gemini-2.5-flash"
-                        onChange={(event) => updateForm("model", event.target.value)}
-                      />
-                    </div>
-                    {personalFields.map((field) => (
-                      <div key={field.key} className="space-y-2">
-                        <label className="text-sm font-medium text-slate-200">{field.label}</label>
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-200">Gemini API Key</label>
                         <Input
-                          value={form[field.key]}
-                          placeholder={field.placeholder}
-                          onChange={(event) => updateForm(field.key, event.target.value)}
+                          type="password"
+                          value={form.apiKey}
+                          placeholder="Paste your Gemini API key"
+                          onChange={(event) => updateForm("apiKey", event.target.value)}
+                        />
+                        <p className="text-xs leading-5 text-slate-400">
+                          Required only when the user wants Gemini to generate resume content. The normal resume builder does not need this key.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-200">Model</label>
+                        <Input
+                          value={form.model}
+                          placeholder="gemini-2.5-flash"
+                          onChange={(event) => updateForm("model", event.target.value)}
                         />
                       </div>
-                    ))}
+                      {personalFields.map((field) => (
+                        <div key={field.key} className="space-y-2">
+                          <label className="text-sm font-medium text-slate-200">{field.label}</label>
+                          <Input
+                            value={form[field.key]}
+                            placeholder={field.placeholder}
+                            onChange={(event) => updateForm(field.key, event.target.value)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+                          <ImageUp className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-white">Resume Header Photo</div>
+                          <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                            Upload a professional headshot to place it on the right side of the resume header. Keep it clean and recruiter-appropriate.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_140px] md:items-start">
+                        <div className="space-y-3">
+                          <Input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            onChange={(event) => handlePhotoChange(event.target.files?.[0] ?? null)}
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              onClick={() => handlePhotoChange(null)}
+                            >
+                              Remove Photo
+                            </Button>
+                          </div>
+                          <ToggleCard
+                            checked={form.includePhoto}
+                            label="Show photo in header"
+                            description="Keeps the profile image on the right side of the resume header in preview and exports."
+                            onChange={(value) => updateForm("includePhoto", value)}
+                          />
+                          <UploadMeter status={photoUpload} />
+                          {form.photo ? (
+                            <div className="space-y-2 rounded-2xl border border-white/10 bg-slate-950/35 p-3">
+                              <div className="flex items-center justify-between gap-3 text-xs text-slate-300">
+                                <span>Photo vertical focus</span>
+                                <span>{form.photoPosition}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min={0}
+                                max={100}
+                                value={form.photoPosition}
+                                onChange={(event) =>
+                                  updateForm("photoPosition", Number(event.target.value))
+                                }
+                                className="h-2 w-full accent-cyan-300"
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="flex justify-start md:justify-end">
+                          {form.photo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={form.photo}
+                              alt="Resume header preview"
+                              className="h-36 w-28 rounded-lg border border-slate-900 bg-white object-cover"
+                              style={{ objectPosition: `50% ${form.photoPosition}%` }}
+                            />
+                          ) : (
+                            <div className="flex h-36 w-28 items-center justify-center rounded-lg border-2 border-slate-900 bg-white text-xs font-bold uppercase tracking-[0.28em] text-slate-900">
+                              PHOTO
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </FormSection>
               ) : null}
@@ -1043,6 +1423,56 @@ export default function AiResumeGeneratorPage() {
                       </select>
                     </div>
                   </div>
+                  <div className="mt-4 grid gap-4 md:grid-cols-3">
+                    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                      <span>
+                        <span className="block text-sm font-semibold text-white">Premium backgrounds</span>
+                        <span className="mt-1 block text-xs leading-5 text-slate-400">
+                          Add subtle ATS-safe paper styling with light structure and clear readability.
+                        </span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        className="h-5 w-5 accent-cyan-300"
+                        checked={form.backgroundEnabled}
+                        onChange={(event) => updateForm("backgroundEnabled", event.target.checked)}
+                      />
+                    </label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-200">Background Theme</label>
+                      <select
+                        value={form.backgroundTheme}
+                        disabled={!form.backgroundEnabled}
+                        onChange={(event) =>
+                          updateForm("backgroundTheme", event.target.value as ResumeBackgroundTheme)
+                        }
+                        className="resume-select h-12 w-full rounded-2xl border border-white/10 bg-white/[0.06] px-4 text-sm text-foreground outline-none transition disabled:opacity-50 focus:border-primary/70 focus:bg-white/[0.08] focus:ring-2 focus:ring-primary/20"
+                      >
+                        {backgroundThemeOptions.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-200">Background Intensity</label>
+                      <select
+                        value={form.backgroundIntensity}
+                        disabled={!form.backgroundEnabled}
+                        onChange={(event) =>
+                          updateForm("backgroundIntensity", event.target.value as ResumeBackgroundIntensity)
+                        }
+                        className="resume-select h-12 w-full rounded-2xl border border-white/10 bg-white/[0.06] px-4 text-sm text-foreground outline-none transition disabled:opacity-50 focus:border-primary/70 focus:bg-white/[0.08] focus:ring-2 focus:ring-primary/20"
+                      >
+                        {backgroundIntensityOptions.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </FormSection>
               ) : null}
 
@@ -1139,9 +1569,11 @@ export default function AiResumeGeneratorPage() {
                       <div className="mt-2 text-sm text-slate-400">{insights.label}</div>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                      <div className="text-sm font-semibold text-white">ATS Keyword Fit</div>
-                      <div className="mt-3 text-4xl font-semibold text-white">{keywordFit.score}%</div>
-                      <div className="mt-2 text-sm text-slate-400">{keywordFit.matched.length} matched, {keywordFit.missing.length} missing</div>
+                      <div className="text-sm font-semibold text-white">ATS Readiness</div>
+                      <div className="mt-3 text-4xl font-semibold text-white">{insights.atsScore}/100</div>
+                      <div className="mt-2 text-sm text-slate-400">
+                        {keywordFit.matched.length} keywords matched, {insights.blockingIssues.length} blocking issue{insights.blockingIssues.length === 1 ? "" : "s"}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -1155,6 +1587,26 @@ export default function AiResumeGeneratorPage() {
                       </div>
                     ))}
                   </div>
+                  {insights.blockingIssues.length ? (
+                    <div className="mt-5 space-y-2 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
+                      <div className="text-sm font-semibold text-amber-100">What still needs fixing</div>
+                      {insights.blockingIssues.map((issue) => (
+                        <div key={issue} className="text-sm leading-6 text-amber-50">
+                          - {issue}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {insights.strengths.length ? (
+                    <div className="mt-5 space-y-2 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
+                      <div className="text-sm font-semibold text-emerald-100">What already looks strong</div>
+                      {insights.strengths.slice(0, 4).map((item) => (
+                        <div key={item} className="text-sm leading-6 text-emerald-50">
+                          - {item}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                   <div className="mt-5 flex flex-wrap gap-2">
                     <Button type="button" variant="secondary" disabled={!resumeData} onClick={() => handleLocalUpgrade("stronger")}>
                       <Zap className="h-4 w-4" />
@@ -1272,8 +1724,8 @@ export default function AiResumeGeneratorPage() {
                     <div className="mt-2 text-3xl font-semibold text-white">{insights.score}</div>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400">ATS Fit</div>
-                    <div className="mt-2 text-3xl font-semibold text-white">{keywordFit.score}%</div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-slate-400">ATS</div>
+                    <div className="mt-2 text-3xl font-semibold text-white">{insights.atsScore}</div>
                   </div>
                 </div>
                 <div className="space-y-2">

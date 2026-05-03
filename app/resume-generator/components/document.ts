@@ -14,6 +14,7 @@ import {
   normalizeUrl,
   splitLines,
 } from "./content";
+import { getResumeBackgroundStyles, rgbToCss } from "./resume-backgrounds";
 import { type ResumeData, type ResumeTemplate } from "./types";
 
 function slugify(value: string) {
@@ -113,22 +114,120 @@ function renderListItems(items: string[]) {
   return items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
 }
 
+function renderBackgroundLayer(data: ResumeData) {
+  if (!data.backgroundEnabled) {
+    return "";
+  }
+
+  const { palette, wash, accent, line, frame, band } = getResumeBackgroundStyles(data);
+  const paperColor = rgbToCss(palette.paper);
+  const washColor = rgbToCss(wash, 0.9);
+  const accentColor = rgbToCss(accent, 0.9);
+  const lineColor = rgbToCss(line, 0.95);
+  const frameColor = rgbToCss(frame, 0.85);
+  const bandColor = rgbToCss(band, 0.9);
+
+  if (data.template === "modern") {
+    return `
+      <div class="resume-background-layer">
+        <div class="resume-background-fill" style="background:linear-gradient(135deg,${washColor} 0%,${paperColor} 54%,${paperColor} 100%);"></div>
+        <div class="resume-strip-left" style="background:${frameColor};"></div>
+        <div class="resume-orb-top-left" style="background:radial-gradient(circle at top left,${accentColor} 0%,transparent 72%);"></div>
+        <div class="resume-line" style="top:168px;left:40px;right:40px;background:${lineColor};"></div>
+        <div class="resume-line" style="bottom:92px;left:40px;right:40px;background:${rgbToCss(line, 0.72)};"></div>
+      </div>
+    `;
+  }
+
+  if (data.template === "minimal") {
+    return `
+      <div class="resume-background-layer">
+        <div class="resume-background-fill" style="background:${paperColor};"></div>
+        <div class="resume-line" style="top:32px;left:40px;right:40px;background:${lineColor};"></div>
+        <div class="resume-line" style="top:166px;left:40px;right:40px;background:${rgbToCss(line, 0.75)};"></div>
+        <div class="resume-line" style="bottom:32px;left:40px;right:40px;background:${lineColor};"></div>
+      </div>
+    `;
+  }
+
+  if (data.template === "professional") {
+    return `
+      <div class="resume-background-layer">
+        <div class="resume-background-fill" style="background:${paperColor};"></div>
+        <div class="resume-box" style="top:32px;left:32px;right:32px;height:112px;border-color:${frameColor};background:${rgbToCss(wash, 0.46)};"></div>
+        <div class="resume-box" style="top:172px;left:32px;right:32px;bottom:32px;border-color:${rgbToCss(line, 0.8)};background:${rgbToCss(palette.paper, 0.82)};"></div>
+        <div class="resume-line" style="top:228px;left:48px;right:48px;background:${lineColor};"></div>
+        <div class="resume-line" style="top:494px;left:48px;right:48px;background:${rgbToCss(line, 0.72)};"></div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="resume-background-layer">
+      <div class="resume-background-fill" style="background:${paperColor};"></div>
+      <div class="resume-header-band" style="background:linear-gradient(135deg,${bandColor} 0%,${washColor} 38%,${paperColor} 100%);"></div>
+      <div class="resume-watermark" style="background:${rgbToCss(accent, 0.22)};"></div>
+      <div class="resume-watermark-outline" style="border-color:${rgbToCss(frame, 0.38)};"></div>
+      <div class="resume-line" style="top:170px;left:48px;right:48px;background:${lineColor};"></div>
+    </div>
+  `;
+}
+
 function renderHeader(data: ResumeData, variant: (typeof templateVariants)[ResumeTemplate]) {
   const contacts = getHeaderContacts(data);
   const isModern = data.template === "modern";
   const isExecutive = data.template === "executive";
+  const hasHeaderPhoto = Boolean(data.includePhoto && (data.photo || isExecutive));
   const primaryContacts = contacts.slice(0, 3);
   const secondaryContacts = contacts.slice(3);
-  const executivePhoto = data.photo
+  const headerPhoto = data.photo
     ? `<div class="executive-photo-shell"><img class="executive-photo-image" src="${escapeHtml(
         data.photo
       )}" style="object-position:50% ${data.photoPosition}%" alt="Profile photo" /></div>`
-    : `<div class="executive-photo-placeholder">PHOTO</div>`;
+    : data.includePhoto
+      ? `<div class="executive-photo-placeholder">PHOTO</div>`
+      : "";
 
   return `
     <header class="resume-header ${variant.dividerClass} ${variant.headerClass}">
       ${
-        isModern
+        hasHeaderPhoto
+          ? `
+            <div class="header-executive-grid">
+              <div>
+                <h1 class="${variant.nameClass}">${escapeHtml(data.personalInfo.fullName || "Your Name")}</h1>
+                <div class="resume-role ${variant.roleClass}">${escapeHtml(
+                  data.personalInfo.title || "Frontend Developer"
+                )}</div>
+                ${
+                  contacts.length > 0
+                    ? `
+                      <div class="resume-contact-stack header-photo-contact-stack">
+                        ${
+                          primaryContacts.length > 0
+                            ? `<div class="resume-contact-row executive-contact-row">${primaryContacts
+                                .map((item) => `<span class="resume-contact-item">${escapeHtml(item)}</span>`)
+                                .join("")}</div>`
+                            : ""
+                        }
+                        ${
+                          secondaryContacts.length > 0
+                            ? `<div class="resume-contact-row executive-contact-row">${secondaryContacts
+                                .map((item) => `<span class="resume-contact-item">${escapeHtml(item)}</span>`)
+                                .join("")}</div>`
+                            : ""
+                        }
+                      </div>
+                    `
+                    : ""
+                }
+              </div>
+              <div class="executive-photo-column">
+                ${headerPhoto}
+              </div>
+            </div>
+          `
+          : isModern
           ? `
             <div class="header-modern-grid">
               <div>
@@ -176,7 +275,7 @@ function renderHeader(data: ResumeData, variant: (typeof templateVariants)[Resum
                   }
                 </div>
                 <div class="executive-photo-column">
-                  ${executivePhoto}
+                  ${headerPhoto}
                 </div>
               </div>
             `
@@ -485,6 +584,7 @@ export function createResumeDocument(data: ResumeData) {
       position: absolute;
       left: 0;
       top: 0;
+      overflow: hidden;
       transform: scale(var(--resume-scale));
       transform-origin: top left;
       padding: 36px 40px;
@@ -492,6 +592,74 @@ export function createResumeDocument(data: ResumeData) {
 
     .resume-shell {
       display: block;
+      position: relative;
+      z-index: 1;
+    }
+
+    .resume-background-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .resume-background-fill,
+    .resume-strip-left,
+    .resume-orb-top-left,
+    .resume-line,
+    .resume-box,
+    .resume-header-band,
+    .resume-watermark,
+    .resume-watermark-outline {
+      position: absolute;
+    }
+
+    .resume-background-fill {
+      inset: 0;
+    }
+
+    .resume-strip-left {
+      inset: 0 auto 0 0;
+      width: 6px;
+    }
+
+    .resume-orb-top-left {
+      left: 40px;
+      top: 0;
+      width: 288px;
+      height: 208px;
+    }
+
+    .resume-line {
+      height: 1px;
+    }
+
+    .resume-box {
+      border: 1px solid transparent;
+      border-radius: 28px;
+    }
+
+    .resume-header-band {
+      inset: 0 0 auto 0;
+      height: 144px;
+    }
+
+    .resume-watermark {
+      right: -56px;
+      top: 40px;
+      width: 192px;
+      height: 192px;
+      border-radius: 999px;
+    }
+
+    .resume-watermark-outline {
+      right: -24px;
+      top: 80px;
+      width: 112px;
+      height: 112px;
+      border-radius: 999px;
+      border: 1px solid transparent;
     }
 
     .sheet-modern {
@@ -523,7 +691,7 @@ export function createResumeDocument(data: ResumeData) {
     }
 
     .header-modern {
-      border-top: 3px solid #111827;
+      border-top: 3px solid #0369a1;
       border-bottom-width: 2px;
       padding-top: 18px;
       padding-bottom: 16px;
@@ -554,15 +722,15 @@ export function createResumeDocument(data: ResumeData) {
 
     .divider-modern,
     .divider-executive {
-      border-bottom: 1.5px solid #111827;
+      border-bottom: 1.5px solid #b45309;
     }
 
     .divider-professional {
-      border-bottom: 1px solid #9ca3af;
+      border-bottom: 1px solid #0f766e;
     }
 
     .divider-minimal {
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid #c7d2fe;
     }
 
     .resume-role {
@@ -578,6 +746,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 500;
       letter-spacing: 0.18em;
       text-transform: uppercase;
+      color: #4338ca;
     }
 
     .role-modern {
@@ -586,13 +755,14 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 600;
       letter-spacing: 0.16em;
       text-transform: uppercase;
+      color: #0369a1;
     }
 
     .role-professional {
       margin-top: 6px;
       font-size: 13px;
       font-weight: 500;
-      color: #475569;
+      color: #0f766e;
     }
 
     .role-executive {
@@ -601,7 +771,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 600;
       letter-spacing: 0.24em;
       text-transform: uppercase;
-      color: #334155;
+      color: #92400e;
     }
 
     .resume-contact-row {
@@ -656,7 +826,7 @@ export function createResumeDocument(data: ResumeData) {
     .executive-photo-column {
       display: flex;
       justify-content: flex-end;
-      border-left: 1px solid #d1d5db;
+      border-left: 1px solid #fcd34d;
       padding-left: 28px;
     }
 
@@ -664,7 +834,7 @@ export function createResumeDocument(data: ResumeData) {
     .executive-photo-placeholder {
       width: 118px;
       height: 156px;
-      border: 2px solid #111827;
+      border: 2px solid #b45309;
       background: #ffffff;
     }
 
@@ -687,7 +857,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 700;
       letter-spacing: 0.34em;
       text-transform: uppercase;
-      color: #111827;
+      color: #92400e;
     }
 
     .resume-contact-item {
@@ -720,13 +890,14 @@ export function createResumeDocument(data: ResumeData) {
       align-items: center;
       gap: 12px;
       letter-spacing: 0.34em;
+      color: #0369a1;
     }
 
     .section-modern::before {
       content: "";
       width: 36px;
       height: 2px;
-      background: #111827;
+      background: #0ea5e9;
       flex-shrink: 0;
     }
 
@@ -734,32 +905,34 @@ export function createResumeDocument(data: ResumeData) {
       content: "";
       flex: 1;
       height: 1px;
-      background: #d1d5db;
+      background: #bae6fd;
     }
 
     .section-professional {
       font-weight: 700;
       letter-spacing: 0.22em;
-      border-bottom: 1px solid #6b7280;
+      border-bottom: 1px solid #0f766e;
       padding-bottom: 4px;
       font-size: 10.5px;
+      color: #0f766e;
     }
 
     .section-executive {
       display: flex;
       align-items: center;
       gap: 16px;
-      border-top: 1.5px solid #111827;
+      border-top: 1.5px solid #b45309;
       padding-top: 8px;
       font-size: 10.5px;
       letter-spacing: 0.28em;
+      color: #b45309;
     }
 
     .section-executive::after {
       content: "";
       flex: 1;
       height: 1px;
-      background: #d1d5db;
+      background: #fde68a;
     }
 
     .section-minimal {
@@ -768,7 +941,7 @@ export function createResumeDocument(data: ResumeData) {
       display: flex;
       align-items: center;
       gap: 12px;
-      color: #111827;
+      color: #4338ca;
     }
 
     .section-minimal::before,
@@ -776,7 +949,7 @@ export function createResumeDocument(data: ResumeData) {
       content: "";
       flex: 1;
       height: 1.5px;
-      background: #1f2937;
+      background: #6366f1;
     }
 
     .name-modern,
@@ -852,7 +1025,7 @@ export function createResumeDocument(data: ResumeData) {
     }
 
     .entry-modern-shell {
-      border-left: 2px solid #111827;
+      border-left: 2px solid #0ea5e9;
       padding-left: 18px;
     }
 
@@ -922,7 +1095,7 @@ export function createResumeDocument(data: ResumeData) {
     .entry-subtitle-professional {
       margin-top: 4px;
       font-size: 13px;
-      color: #475569;
+      color: #0f766e;
     }
 
     .entry-subtitle-executive {
@@ -931,7 +1104,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 600;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #475569;
+      color: #b45309;
     }
 
     .entry-meta-professional {
@@ -940,7 +1113,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 500;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #4b5563;
+      color: #0f766e;
     }
 
     .entry-meta-executive {
@@ -949,7 +1122,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #475569;
+      color: #92400e;
     }
 
     .entry-subtitle-modern {
@@ -958,7 +1131,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #475569;
+      color: #0369a1;
     }
 
     .entry-meta-modern {
@@ -967,7 +1140,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 700;
       letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: #334155;
+      color: #075985;
     }
 
     .entry-meta {
@@ -1003,6 +1176,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
+      color: #0369a1;
     }
 
     .project-links-professional {
@@ -1013,7 +1187,7 @@ export function createResumeDocument(data: ResumeData) {
       gap: 6px 12px;
       font-size: 11px;
       font-weight: 500;
-      color: #4b5563;
+      color: #0f766e;
     }
 
     .project-links-executive {
@@ -1026,7 +1200,7 @@ export function createResumeDocument(data: ResumeData) {
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #475569;
+      color: #b45309;
     }
 
     .bullet-list {
@@ -1097,6 +1271,7 @@ export function createResumeDocument(data: ResumeData) {
 <body>
   <div class="resume-sheet-viewport">
     <div class="resume-sheet">
+      ${renderBackgroundLayer(data)}
       <div class="resume-shell ${variant.rootClass} ${variant.sheetClass}">
         ${renderHeader(data, variant)}
         ${renderSummary(data, variant)}

@@ -40,6 +40,8 @@ import {
   createProjectItem,
   type EducationItem,
   type ExperienceItem,
+  type ResumeBackgroundIntensity,
+  type ResumeBackgroundTheme,
   type ResumePageCount,
   type ResumeData,
   type ResumeTemplate,
@@ -124,6 +126,9 @@ const initialResumeData: ResumeData = {
   photo: null,
   photoPosition: 18,
   includePhoto: false,
+  backgroundEnabled: true,
+  backgroundTheme: "blue",
+  backgroundIntensity: "low",
   atsMode: true,
 };
 
@@ -148,6 +153,9 @@ type ResumeAction =
   | { type: "setPhoto"; value: string | null }
   | { type: "setPhotoPosition"; value: number }
   | { type: "setIncludePhoto"; value: boolean }
+  | { type: "setBackgroundEnabled"; value: boolean }
+  | { type: "setBackgroundTheme"; value: ResumeBackgroundTheme }
+  | { type: "setBackgroundIntensity"; value: ResumeBackgroundIntensity }
   | { type: "setAtsMode"; value: boolean }
   | { type: "addExperience" | "addEducation" | "addProject" }
   | { type: "removeExperience" | "removeEducation" | "removeProject"; id: string }
@@ -206,6 +214,12 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
       return { ...state, photoPosition: action.value };
     case "setIncludePhoto":
       return { ...state, includePhoto: action.value };
+    case "setBackgroundEnabled":
+      return { ...state, backgroundEnabled: action.value };
+    case "setBackgroundTheme":
+      return { ...state, backgroundTheme: action.value };
+    case "setBackgroundIntensity":
+      return { ...state, backgroundIntensity: action.value };
     case "setAtsMode":
       return {
         ...state,
@@ -646,6 +660,15 @@ export default function ResumeGeneratorPage() {
           }
           onToggleIncludePhoto={(value) =>
             dispatch({ type: "setIncludePhoto", value })
+          }
+          onToggleBackground={(value) =>
+            dispatch({ type: "setBackgroundEnabled", value })
+          }
+          onBackgroundThemeChange={(value) =>
+            dispatch({ type: "setBackgroundTheme", value })
+          }
+          onBackgroundIntensityChange={(value) =>
+            dispatch({ type: "setBackgroundIntensity", value })
           }
           onToggleAtsMode={(value) => dispatch({ type: "setAtsMode", value })}
           onGenerateSummary={() => dispatch({ type: "enhanceSummary" })}

@@ -18,6 +18,7 @@ import {
 
 type DeployCardProps = {
   formData: DeploymentFormData;
+  githubConnectionError?: string | null;
   onFieldChange: (
     field: "portfolioName" | "subdomain" | "customDomain" | "githubRepoName",
     value: string
@@ -36,18 +37,19 @@ const environments: Array<{
 }> = [
   {
     id: "production",
-    label: "Production",
-    description: "Deploy to your primary public portfolio URL.",
+    label: "Main",
+    description: "Prepare the repository for the main version you plan to deploy publicly.",
   },
   {
     id: "preview",
     label: "Preview",
-    description: "Create a safe preview deployment before going live.",
+    description: "Create a safe preview package before the final GitHub push.",
   },
 ];
 
 export function DeployCard({
   formData,
+  githubConnectionError,
   onFieldChange,
   onEnvironmentChange,
   onConnectGithub,
@@ -55,14 +57,12 @@ export function DeployCard({
   onDeploy,
   isDeploying,
 }: DeployCardProps) {
-  const subdomainSuffix = ".vampforge.app";
-
   return (
     <Card className="bg-white/[0.045]">
       <CardHeader className="border-b border-white/10">
-        <CardTitle className="text-white">Deployment Settings Card</CardTitle>
+        <CardTitle className="text-white">GitHub Publish Settings</CardTitle>
         <CardDescription>
-          Configure your deployment target, portfolio name, and simulated hosting options.
+          Prepare your portfolio code for GitHub. Hosting stays in the user&apos;s control.
         </CardDescription>
       </CardHeader>
 
@@ -71,7 +71,7 @@ export function DeployCard({
           <div>
             <div className="text-sm font-medium text-slate-200">GitHub Connection</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Connect GitHub before deploying so VampForge can create or update your portfolio repository.
+              Connect GitHub before pushing portfolio code. VampForge should only publish into the user&apos;s own account.
             </p>
           </div>
 
@@ -105,8 +105,8 @@ export function DeployCard({
                   </div>
                   <div className="mt-1 break-words text-xs leading-5 text-slate-600">
                     {formData.githubConnected
-                      ? `Connected as ${formData.githubUsername}. You can deploy when the repo name is ready.`
-                      : "A real app should complete GitHub OAuth, store the token securely, and request repository permissions."}
+                      ? `Connected as ${formData.githubUsername}. You can push portfolio code when the repository name is ready.`
+                      : "GitHub OAuth is required so the user can push code into a real repository in their own account."}
                   </div>
                 </div>
               </div>
@@ -120,13 +120,16 @@ export function DeployCard({
               </Button>
             </div>
           </div>
+          {githubConnectionError ? (
+            <p className="text-sm text-amber-200">{githubConnectionError}</p>
+          ) : null}
         </section>
 
         <section className="space-y-4">
           <div>
-            <div className="text-sm font-medium text-slate-200">Deployment Environment</div>
+            <div className="text-sm font-medium text-slate-200">Publish Mode</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Choose whether you want a public release or a temporary preview.
+              Choose whether you want a final push target or a preview-style package run.
             </p>
           </div>
 
@@ -174,9 +177,9 @@ export function DeployCard({
 
         <section className="space-y-4">
           <div>
-            <div className="text-sm font-medium text-slate-200">Deployment Settings</div>
+            <div className="text-sm font-medium text-slate-200">Repository Settings</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Set the portfolio identity and destination URL for this frontend-only deploy flow.
+              Set the repository details here. The user can deploy the pushed code on any hosting platform later.
             </p>
           </div>
 
@@ -196,27 +199,21 @@ export function DeployCard({
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-200">
-                Subdomain
+                Repository Slug
               </label>
-              <div className="flex items-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                <input
-                  value={formData.subdomain}
-                  onChange={(event) =>
-                    onFieldChange("subdomain", event.target.value)
-                  }
-                  className="h-11 w-full bg-transparent px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                  placeholder="janmejoy"
-                />
-                <div className="border-l border-white/10 bg-slate-950/40 px-4 py-3 text-sm text-muted-foreground">
-                  {subdomainSuffix}
-                </div>
-              </div>
+              <Input
+                value={formData.subdomain}
+                onChange={(event) =>
+                  onFieldChange("subdomain", event.target.value)
+                }
+                placeholder="portfolio-source"
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">
-                  Custom Domain
+                  Preferred Live Domain
                 </label>
                 <div className="relative">
                   <Globe className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -261,12 +258,12 @@ export function DeployCard({
           {isDeploying ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
-              Deploying...
+              Publishing...
             </>
           ) : (
             <>
               <ArrowUpRight className="h-4 w-4" />
-              {formData.githubConnected ? "Deploy Portfolio" : "Connect GitHub to Deploy"}
+              {formData.githubConnected ? "Push Portfolio Code" : "Connect GitHub to Push"}
             </>
           )}
         </Button>

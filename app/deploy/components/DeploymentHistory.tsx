@@ -22,10 +22,10 @@ export function DeploymentHistory({ history }: DeploymentHistoryProps) {
           <div>
             <CardTitle className="flex items-center gap-2 text-white">
               <History className="h-5 w-5 text-primary" />
-              Deployment History Card
+              Publish History
             </CardTitle>
             <CardDescription>
-              Review recent mock deployments, environments, and quick actions.
+              Review recent GitHub pushes, package modes, and quick actions.
             </CardDescription>
           </div>
           <Badge variant="secondary">{history.length} records</Badge>
@@ -51,7 +51,7 @@ export function DeploymentHistory({ history }: DeploymentHistoryProps) {
                 <div className="min-w-0">
                   <Badge
                     variant={
-                      item.status === "Success"
+                      item.status === "Pushed"
                         ? "success"
                         : item.status === "Preview"
                           ? "secondary"
@@ -78,7 +78,7 @@ export function DeploymentHistory({ history }: DeploymentHistoryProps) {
 
         <div className="mt-4 flex items-center justify-end gap-2 text-xs text-muted-foreground">
           <MoreHorizontal className="h-3.5 w-3.5" />
-          Frontend-only mock deployment history
+          Frontend-only mock GitHub publish history
         </div>
       </CardContent>
     </Card>

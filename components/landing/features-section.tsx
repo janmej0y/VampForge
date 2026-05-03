@@ -16,7 +16,7 @@ const features = [
   {
     icon: FolderKanban,
     title: "Portfolio Builder",
-    description: "Compose polished case studies, skill systems, project grids, social links, and a deploy-ready developer profile.",
+    description: "Compose polished case studies, skill systems, project grids, social links, and a publish-ready developer profile.",
     href: "/portfolio",
     accent: "from-cyan-300 to-blue-500",
   },
@@ -43,8 +43,8 @@ const features = [
   },
   {
     icon: Rocket,
-    title: "Deploy Portfolio",
-    description: "Move from draft to public presence with production-style deployment states, URLs, and launch history.",
+    title: "Publish Portfolio",
+    description: "Prepare portfolio code, connect GitHub, push the source, and deploy it anywhere you want.",
     href: "/deploy",
     accent: "from-amber-200 to-cyan-400",
   },

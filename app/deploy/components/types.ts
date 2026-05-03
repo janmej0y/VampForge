@@ -9,7 +9,7 @@ export type DeploymentStep = {
 export type DeploymentHistoryItem = {
   id: string;
   date: string;
-  status: "Success" | "Preview" | "Failed";
+  status: "Pushed" | "Preview" | "Failed";
   url: string;
   environment: DeploymentEnvironment;
 };

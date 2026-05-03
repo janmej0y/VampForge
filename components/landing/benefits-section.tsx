@@ -18,8 +18,8 @@ const benefits = [
   },
   {
     icon: Rocket,
-    title: "Instant Deployment",
-    description: "Launch your public-facing portfolio with a clean, one-click hosting experience.",
+    title: "GitHub Publishing",
+    description: "Push portfolio code to GitHub cleanly, then deploy it on the hosting platform you prefer.",
   },
 ];
 

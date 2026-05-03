@@ -157,7 +157,7 @@ export function InterviewSetup({
                   <p className="mt-3 text-sm text-amber-200">{startError}</p>
                 ) : (
                   <p className="mt-3 text-sm text-slate-400">
-                    Interview evaluation uses this key for Gemini scoring requests.
+                    Stored locally and used only for Gemini interview generation and scoring. It is required only when the user wants AI interview features.
                   </p>
                 )}
               </div>

@@ -9,15 +9,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border border-teal-300/25 bg-[linear-gradient(135deg,#5eead4_0%,#38bdf8_46%,#4f46e5_100%)] text-slate-950 shadow-[0_14px_34px_rgba(20,184,166,0.2),inset_0_1px_0_rgba(255,255,255,0.42)] hover:-translate-y-0.5 hover:brightness-[1.04] hover:shadow-[0_18px_44px_rgba(20,184,166,0.24)]",
+          "border border-primary/20 bg-primary text-primary-foreground shadow-[0_14px_34px_hsl(var(--primary)/0.22),inset_0_1px_0_rgba(255,255,255,0.18)] hover:-translate-y-0.5 hover:brightness-[1.02] hover:shadow-[0_18px_44px_hsl(var(--primary)/0.26)]",
         secondary:
-          "border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_28px_rgba(2,6,23,0.18)] backdrop-blur-xl hover:-translate-y-0.5 hover:border-teal-300/25 hover:bg-white/[0.075] hover:text-white hover:shadow-[0_14px_36px_rgba(15,23,42,0.18)]",
+          "border border-border bg-card/80 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_28px_rgba(2,6,23,0.14)] backdrop-blur-xl hover:-translate-y-0.5 hover:border-primary/25 hover:bg-card hover:text-foreground",
         ghost:
           "text-muted-foreground hover:-translate-y-0.5 hover:bg-white/[0.07] hover:text-foreground",
         outline:
-          "border border-white/[0.12] bg-slate-950/20 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl hover:-translate-y-0.5 hover:border-teal-300/25 hover:bg-white/[0.055] hover:shadow-[0_14px_34px_rgba(15,23,42,0.16)]",
+          "border border-border bg-background/35 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl hover:-translate-y-0.5 hover:border-primary/25 hover:bg-card/70 hover:shadow-[0_14px_34px_rgba(15,23,42,0.12)]",
         accent:
-          "border border-amber-200/30 bg-[linear-gradient(135deg,#f8fafc_0%,#facc15_58%,#14b8a6_130%)] text-slate-950 shadow-[0_14px_34px_rgba(245,158,11,0.18),inset_0_1px_0_rgba(255,255,255,0.55)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_18px_44px_rgba(245,158,11,0.22)]",
+          "border border-primary/22 bg-secondary text-secondary-foreground shadow-[0_14px_34px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.25)] hover:-translate-y-0.5 hover:border-primary/30 hover:bg-card",
       },
       size: {
         default: "h-11 px-5 py-2.5",

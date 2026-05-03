@@ -50,10 +50,10 @@ export const featureCards: FeatureCard[] = [
     accent: "from-violet-500/20 to-cyan-500/10",
   },
   {
-    title: "Deploy Portfolio",
-    description: "Push your portfolio to a production-style Vercel flow in one click.",
+    title: "Publish Portfolio",
+    description: "Push your portfolio source code to GitHub, then deploy it on any platform you prefer.",
     href: "/deploy",
-    cta: "Deploy now",
+    cta: "Publish code",
     icon: Globe2,
     accent: "from-sky-500/20 to-cyan-500/10",
   },
@@ -82,7 +82,7 @@ export const recentActivity = [
   },
   {
     title: "Deployment staged",
-    description: "Preview build prepared for `vampforge-dev.vercel.app`.",
+    description: "Portfolio source package was pushed to the linked GitHub repository.",
     time: "Today",
   },
 ];
@@ -105,7 +105,7 @@ export const quickActions = [
     href: "/live-interview",
   },
   {
-    label: "Deploy latest portfolio",
+    label: "Publish latest portfolio code",
     href: "/deploy",
   },
 ];

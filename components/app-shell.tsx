@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppThemeProvider } from "@/components/app-theme";
 import { Navbar } from "@/components/navbar";
+import { PageMotion } from "@/components/page-motion";
 import { Sidebar } from "@/components/sidebar";
 
 type AppShellProps = {
@@ -43,10 +44,28 @@ export function AppShell({ children }: AppShellProps) {
     <AppThemeProvider value={{ theme, toggleTheme }}>
       <div className={`page-shell relative min-h-screen overflow-x-hidden ${theme === "light" ? "app-light" : "app-dark"}`}>
         <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:76px_76px] opacity-[0.04]" />
-        <div className="pointer-events-none absolute left-0 top-8 h-72 w-72 -translate-x-1/3 rounded-full bg-sky-300/24 blur-3xl orbital-drift" />
-        <div className="pointer-events-none absolute right-0 top-20 h-96 w-96 translate-x-1/3 rounded-full bg-blue-300/18 blur-3xl orbital-drift delay-2" />
-        <div className="pointer-events-none absolute bottom-[-7rem] left-1/3 h-80 w-80 rounded-full bg-cyan-300/18 blur-3xl pulse-soft" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[linear-gradient(180deg,rgba(14,165,233,0.12),transparent)]" />
+        <div
+          className={`pointer-events-none absolute left-0 top-8 h-72 w-72 -translate-x-1/3 rounded-full blur-3xl orbital-drift ${
+            theme === "light" ? "bg-sky-300/24" : "bg-white/10"
+          }`}
+        />
+        <div
+          className={`pointer-events-none absolute right-0 top-20 h-96 w-96 translate-x-1/3 rounded-full blur-3xl orbital-drift delay-2 ${
+            theme === "light" ? "bg-blue-300/18" : "bg-white/8"
+          }`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-[-7rem] left-1/3 h-80 w-80 rounded-full blur-3xl pulse-soft ${
+            theme === "light" ? "bg-cyan-300/18" : "bg-white/6"
+          }`}
+        />
+        <div
+          className={`pointer-events-none absolute inset-x-0 top-0 h-48 ${
+            theme === "light"
+              ? "bg-[linear-gradient(180deg,rgba(59,130,246,0.12),transparent)]"
+              : "bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]"
+          }`}
+        />
 
         <Sidebar
           collapsed={false}
@@ -62,7 +81,9 @@ export function AppShell({ children }: AppShellProps) {
               onToggleTheme={toggleTheme}
               onOpenSidebar={() => setMobileOpen(true)}
             />
-            <main className="min-w-0 pb-8">{children}</main>
+            <main className="min-w-0 pb-8">
+              <PageMotion>{children}</PageMotion>
+            </main>
           </div>
         </div>
       </div>

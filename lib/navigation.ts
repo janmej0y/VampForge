@@ -40,10 +40,10 @@ export const navigation = [
     description: "Review strengths, ATS fit, and targeted resume improvements.",
   },
   {
-    title: "Deploy Portfolio",
+    title: "Publish Portfolio",
     href: "/deploy",
     icon: Rocket,
-    description: "Prepare your portfolio for launch and manage deployment status.",
+    description: "Push portfolio code to GitHub and prepare it for deployment on any platform.",
   },
   {
     title: "Settings",

@@ -31,7 +31,13 @@ import { EducationForm } from "./EducationForm";
 import { ExperienceForm } from "./ExperienceForm";
 import { type SkillCategory } from "./intelligence";
 import { ProjectForm } from "./ProjectForm";
-import { type ResumeData, type ResumePageCount, type UploadStatus } from "./types";
+import {
+  type ResumeBackgroundIntensity,
+  type ResumeBackgroundTheme,
+  type ResumeData,
+  type ResumePageCount,
+  type UploadStatus,
+} from "./types";
 
 type ResumeFormProps = {
   data: ResumeData;
@@ -71,6 +77,9 @@ type ResumeFormProps = {
   photoUpload: UploadStatus;
   onPhotoPositionChange: (value: number) => void;
   onToggleIncludePhoto: (value: boolean) => void;
+  onToggleBackground: (value: boolean) => void;
+  onBackgroundThemeChange: (value: ResumeBackgroundTheme) => void;
+  onBackgroundIntensityChange: (value: ResumeBackgroundIntensity) => void;
   onToggleAtsMode: (value: boolean) => void;
   onGenerateSummary: () => void;
   onEnhanceExperience: () => void;
@@ -89,6 +98,20 @@ const personalFields: Array<{
   { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.dev" },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/janmejoy" },
   { key: "github", label: "GitHub", placeholder: "https://github.com/janmejoy" },
+];
+
+const backgroundThemes: Array<{ value: ResumeBackgroundTheme; label: string }> = [
+  { value: "blue", label: "Blue" },
+  { value: "purple", label: "Purple" },
+  { value: "neutral", label: "Neutral" },
+];
+
+const backgroundIntensityOptions: Array<{
+  value: ResumeBackgroundIntensity;
+  label: string;
+}> = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
 ];
 
 function FormSection({
@@ -244,6 +267,9 @@ export function ResumeForm({
   onPhotoChange,
   photoUpload,
   onPhotoPositionChange,
+  onToggleBackground,
+  onBackgroundThemeChange,
+  onBackgroundIntensityChange,
   onToggleAtsMode,
   onGenerateSummary,
   onEnhanceExperience,
@@ -293,27 +319,81 @@ export function ResumeForm({
                 description="Keeps the resume locked to a clean single-column structure with standard formatting and recruiter-safe spacing."
                 onChange={onToggleAtsMode}
               />
+              <ToggleCard
+                checked={data.backgroundEnabled}
+                label="Premium Background Design"
+                description="Adds subtle ATS-safe background structure with light gradients, dividers, and template-specific polish."
+                onChange={onToggleBackground}
+              />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-200">
-                Maximum Resume Pages
-              </label>
-              <select
-                value={String(data.pageCount)}
-                onChange={(event) =>
-                  onPageCountChange(Number(event.target.value) as ResumePageCount)
-                }
-                className="resume-select h-11 w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 text-sm text-foreground outline-none transition focus:border-primary/70 focus:bg-white/[0.08] focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="1">1 page</option>
-                <option value="2">2 pages</option>
-                <option value="3">3 pages</option>
-              </select>
-              <p className="text-xs leading-6 text-muted-foreground">
-                The resume auto-fits into this limit. If your content already fits
-                on one page, extra pages will not be added.
-              </p>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200">
+                  Maximum Resume Pages
+                </label>
+                <select
+                  value={String(data.pageCount)}
+                  onChange={(event) =>
+                    onPageCountChange(Number(event.target.value) as ResumePageCount)
+                  }
+                  className="resume-select h-11 w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 text-sm text-foreground outline-none transition focus:border-primary/70 focus:bg-white/[0.08] focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="1">1 page</option>
+                  <option value="2">2 pages</option>
+                  <option value="3">3 pages</option>
+                </select>
+                <p className="text-xs leading-6 text-muted-foreground">
+                  The resume auto-fits into this limit. If your content already fits
+                  on one page, extra pages will not be added.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200">
+                  Background Theme
+                </label>
+                <select
+                  value={data.backgroundTheme}
+                  disabled={!data.backgroundEnabled}
+                  onChange={(event) =>
+                    onBackgroundThemeChange(event.target.value as ResumeBackgroundTheme)
+                  }
+                  className="resume-select h-11 w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 text-sm text-foreground outline-none transition disabled:opacity-50 focus:border-primary/70 focus:bg-white/[0.08] focus:ring-2 focus:ring-primary/20"
+                >
+                  {backgroundThemes.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs leading-6 text-muted-foreground">
+                  Switch the subtle paper styling without affecting text contrast.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200">
+                  Background Intensity
+                </label>
+                <select
+                  value={data.backgroundIntensity}
+                  disabled={!data.backgroundEnabled}
+                  onChange={(event) =>
+                    onBackgroundIntensityChange(event.target.value as ResumeBackgroundIntensity)
+                  }
+                  className="resume-select h-11 w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 text-sm text-foreground outline-none transition disabled:opacity-50 focus:border-primary/70 focus:bg-white/[0.08] focus:ring-2 focus:ring-primary/20"
+                >
+                  {backgroundIntensityOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs leading-6 text-muted-foreground">
+                  Keeps the background subtle at 5-10% visual intensity for ATS safety.
+                </p>
+              </div>
             </div>
 
             {isExecutiveTemplate ? (

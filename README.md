@@ -20,13 +20,13 @@ Think of it like this:
 - 🌐 Create polished portfolio pages
 - 🎤 Practice live interview flows
 - 📊 Track career progress in a dashboard
-- 🚀 Preview portfolio deployment experiences
+- 🚀 Push portfolio code to GitHub, then deploy it anywhere you want
 
 ## 🩸 Core Features
 
 ### 🏠 Landing Experience
 - Premium marketing-style homepage with motion, gradients, and feature previews
-- Product storytelling sections for portfolio, resume, interview, and deploy flows
+- Product storytelling sections for portfolio, resume, interview, and publishing flows
 
 ### 📊 Dashboard
 - Central workspace for career progress and activity
@@ -44,7 +44,7 @@ Think of it like this:
 - ATS-aware formatting and quality checks
 
 ### 🤖 AI Resume Generator
-- Uses your Gemini API key to draft role-focused resume content
+- Uses the user's own Gemini API key only when drafting role-focused resume content
 - Matches resume content to target job descriptions
 - Includes review, scoring, and export readiness feedback
 
@@ -55,10 +55,10 @@ Think of it like this:
 ### 🎤 Live Interview
 - Practice role-specific interview sessions
 - Voice/camera-oriented UI flow
-- Gemini key is stored locally for interview features
+- The user's Gemini key is stored locally and only used for interview AI features
 
-### 🚀 Deploy Portfolio
-- Frontend-only deployment-style experience
+### 🚀 Publish Portfolio
+- Frontend-only GitHub publishing experience
 - Preview launch states, status updates, and portfolio momentum
 
 ### ⚙️ Settings
@@ -128,8 +128,9 @@ NEXT_PUBLIC_GITHUB_CLIENT_ID=
 Notes:
 
 - 🔐 `.env` is already ignored by Git
-- 🤖 The AI resume flow asks for a Gemini API key inside the UI
-- 💾 The live interview Gemini key is stored locally in the browser
+- 🐙 `NEXT_PUBLIC_GITHUB_CLIENT_ID` is only needed if you want users to connect their own GitHub account inside the app before pushing code
+- 🤖 The AI resume flow asks for the user's own Gemini API key inside the UI only when they use AI drafting
+- 💾 The live interview Gemini key is stored locally in the browser and only used when the user wants AI interview features
 
 ### 4. Start the development server
 
@@ -185,7 +186,7 @@ That means less context switching and more time improving the things recruiters 
 - ☁️ saved user data and cloud sync
 - 📬 export history and versioning
 - 🧠 richer AI feedback systems
-- 🌍 public deployment and sharing flow
+- 🌍 stronger GitHub publishing and bring-your-own-hosting flow
 
 ## 🦇 Cool Factor Section
 
@@ -214,4 +215,4 @@ If you like the project:
 
 ---
 
-Made By Janmejoy, motion, and late-night builder energy.
+Made By Vampire, motion, and late-night builder energy.

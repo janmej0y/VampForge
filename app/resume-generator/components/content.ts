@@ -19,11 +19,12 @@ export function normalizeUrl(value: string) {
 
 export function getHeaderContacts(data: ResumeData) {
   return [
+    data.personalInfo.location,
     data.personalInfo.phone,
     data.personalInfo.email,
+    data.personalInfo.website,
     data.personalInfo.github,
     data.personalInfo.linkedin,
-    data.personalInfo.website,
   ].filter(Boolean);
 }
 

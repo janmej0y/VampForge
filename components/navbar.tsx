@@ -105,7 +105,7 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
                   <Search className="h-4 w-4" />
                   Search
                 </Button>
-                <div className="hidden rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1 text-[10px] uppercase tracking-[0.26em] text-slate-400 sm:block">
+                <div className="app-readable-chip hidden rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1 text-[10px] uppercase tracking-[0.26em] text-slate-400 sm:block">
                   Quick Find
                 </div>
               </div>
@@ -136,11 +136,11 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
                   <Moon className="h-4 w-4" />
                 )}
               </Button>
-              <div className="hidden rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-2 text-sm text-slate-300 xl:flex xl:items-center xl:gap-2">
+              <div className="app-readable-chip hidden rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-2 text-sm text-slate-300 xl:flex xl:items-center xl:gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 Premium builder mode
               </div>
-              <div className="flex min-w-0 items-center gap-3 rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.82),rgba(10,18,35,0.7))] px-3 py-2.5">
+              <div className="app-profile-pill flex min-w-0 items-center gap-3 rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.82),rgba(10,18,35,0.7))] px-3 py-2.5">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#5eead4,#a5b4fc)] text-sm font-semibold text-slate-950 shadow-[0_14px_34px_rgba(20,184,166,0.16)]">
                   VF
                 </div>

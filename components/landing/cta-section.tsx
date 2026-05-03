@@ -32,7 +32,7 @@ export function CTASection() {
               Start Building Your Developer Identity Today
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              Launch a portfolio, resume, interview practice flow, and deployment-ready profile from a single premium workspace.
+              Build a portfolio, resume, and interview practice flow in one premium workspace, then publish your portfolio code to GitHub and deploy it wherever you want.
             </p>
             <div className="action-cluster mt-9 justify-center">
               <Button asChild size="lg">

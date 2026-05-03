@@ -16,6 +16,10 @@ import {
   getResumeLayoutEstimate,
 } from "./layout";
 import { categorizeSkills } from "./intelligence";
+import { TemplateExecutive } from "./TemplateExecutive";
+import { TemplateMinimal } from "./TemplateMinimal";
+import { TemplateModern } from "./TemplateModern";
+import { TemplateProfessional } from "./TemplateProfessional";
 import {
   getHeaderContacts,
   getVisibleEducation,
@@ -51,88 +55,116 @@ const templateStyles: Record<
     skillsClassName: string;
     sheetClassName: string;
     stackClassName: string;
+    photoFrameClassName: string;
+    photoDividerClassName: string;
   }
 > = {
   modern: {
     label: "Modern ATS",
     nameClassName: "text-[32px] font-bold tracking-[-0.04em]",
     sectionTitleClassName:
-      "flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-slate-900 before:h-[2px] before:w-9 before:bg-slate-900",
-    dividerClassName: "border-slate-900",
+      "flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.34em] text-sky-700 before:h-[2px] before:w-9 before:bg-sky-500",
+    dividerClassName: "border-sky-700",
     entryTitleClassName: "text-[15px] font-bold text-slate-900",
-    entrySubtitleClassName: "mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600",
-    entryMetaClassName: "shrink-0 pt-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-700",
-    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600",
+    entrySubtitleClassName: "mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-700",
+    entryMetaClassName: "shrink-0 pt-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-sky-800",
+    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-sky-700",
     headerClassName: "border-t-[4px] border-b-[2px] pt-5 pb-4",
-    roleClassName: "mt-1.5 text-[14px] font-semibold uppercase tracking-[0.16em] text-slate-700",
+    roleClassName: "mt-1.5 text-[14px] font-semibold uppercase tracking-[0.16em] text-sky-800",
     contactClassName: "grid gap-y-1 text-right text-[11.5px] leading-5 text-slate-600 md:justify-items-end",
-    articleClassName: "space-y-2.5 border-l-2 border-slate-900/85 pl-4",
-    bulletClassName: "space-y-1.5 pl-5 text-[13px] leading-[1.55] text-slate-700 marker:text-slate-900",
-    summaryClassName: "space-y-1.5 pl-5 text-[13px] leading-[1.6] text-slate-700 marker:text-slate-900",
+    articleClassName: "space-y-2.5 border-l-2 border-sky-600/80 pl-4",
+    bulletClassName: "space-y-1.5 pl-5 text-[13px] leading-[1.55] text-slate-700 marker:text-sky-700",
+    summaryClassName: "space-y-1.5 pl-5 text-[13px] leading-[1.6] text-slate-700 marker:text-sky-700",
     skillsClassName: "space-y-2 pl-5 text-[13px] leading-[1.6] text-slate-700",
     sheetClassName: "px-11 py-10",
     stackClassName: "space-y-7",
+    photoFrameClassName: "border-sky-600 text-sky-700",
+    photoDividerClassName: "md:border-sky-200",
   },
   minimal: {
     label: "Minimal ATS",
     nameClassName: "text-[28px] font-bold uppercase tracking-[0.08em]",
     sectionTitleClassName:
-      "flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.34em] text-slate-900 before:h-[1.5px] before:flex-1 before:bg-slate-800 after:h-[1.5px] after:flex-1 after:bg-slate-800",
-    dividerClassName: "border-slate-300",
+      "flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.34em] text-indigo-700 before:h-[1.5px] before:flex-1 before:bg-indigo-500 after:h-[1.5px] after:flex-1 after:bg-indigo-500",
+    dividerClassName: "border-indigo-200",
     entryTitleClassName: "text-[14px] font-semibold uppercase tracking-[0.08em] text-slate-900",
     entrySubtitleClassName: "text-[13.5px] text-slate-700",
-    entryMetaClassName: "text-[12px] font-medium text-slate-600",
-    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-600",
+    entryMetaClassName: "text-[12px] font-medium text-indigo-700",
+    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium uppercase tracking-[0.08em] text-indigo-700",
     headerClassName: "border-y py-4 text-center",
-    roleClassName: "mt-2 text-[13px] font-medium uppercase tracking-[0.2em] text-slate-600",
+    roleClassName: "mt-2 text-[13px] font-medium uppercase tracking-[0.2em] text-indigo-700",
     contactClassName: "mt-3 justify-center text-[11px] leading-5 text-slate-500",
     articleClassName: "space-y-2 border-t border-slate-200 pt-3 first:border-t-0 first:pt-0",
-    bulletClassName: "space-y-1 pl-5 text-[12.5px] leading-5 text-slate-700",
-    summaryClassName: "space-y-1 pl-5 text-[12.5px] leading-5 text-slate-700",
+    bulletClassName: "space-y-1 pl-5 text-[12.5px] leading-5 text-slate-700 marker:text-indigo-700",
+    summaryClassName: "space-y-1 pl-5 text-[12.5px] leading-5 text-slate-700 marker:text-indigo-700",
     skillsClassName: "space-y-2 pl-5 text-[12.5px] leading-5 text-slate-700",
     sheetClassName: "px-12 py-8",
     stackClassName: "space-y-5",
+    photoFrameClassName: "border-indigo-400 text-indigo-700",
+    photoDividerClassName: "md:border-indigo-200",
   },
   professional: {
     label: "Professional ATS",
     nameClassName: "text-[29px] font-bold tracking-[-0.01em]",
     sectionTitleClassName:
-      "border-b border-slate-500 pb-1 text-[10.5px] font-bold uppercase tracking-[0.18em] text-slate-900",
-    dividerClassName: "border-slate-500",
+      "border-b border-teal-600 pb-1 text-[10.5px] font-bold uppercase tracking-[0.18em] text-teal-700",
+    dividerClassName: "border-teal-600",
     entryTitleClassName: "text-[15px] font-bold text-slate-900",
     entrySubtitleClassName: "mt-1 text-[13px] text-slate-700",
-    entryMetaClassName: "shrink-0 pt-0.5 text-[11.5px] font-medium uppercase tracking-[0.08em] text-slate-600",
-    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-slate-600",
+    entryMetaClassName: "shrink-0 pt-0.5 text-[11.5px] font-medium uppercase tracking-[0.08em] text-teal-700",
+    projectLinksClassName: "mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-teal-700",
     headerClassName: "pb-4 text-center",
-    roleClassName: "mt-1.5 text-[13px] font-medium text-slate-700",
+    roleClassName: "mt-1.5 text-[13px] font-medium text-teal-700",
     contactClassName: "mt-3 flex flex-wrap justify-center gap-x-2 gap-y-1 text-[11.5px] leading-5 text-slate-600",
     articleClassName: "space-y-2.5 border-b border-slate-200 pb-3 last:border-b-0 last:pb-0",
-    bulletClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.55] text-slate-700",
-    summaryClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.6] text-slate-700",
+    bulletClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.55] text-slate-700 marker:text-teal-700",
+    summaryClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.6] text-slate-700 marker:text-teal-700",
     skillsClassName: "space-y-1.5 pl-5 text-[12.75px] leading-[1.6] text-slate-700",
     sheetClassName: "px-12 py-10",
     stackClassName: "space-y-6",
+    photoFrameClassName: "border-teal-600 text-teal-700",
+    photoDividerClassName: "md:border-teal-200",
   },
   executive: {
     label: "Executive ATS",
     nameClassName: "text-[34px] font-bold tracking-[-0.03em]",
     sectionTitleClassName:
-      "flex items-center gap-4 border-t-[1.5px] border-slate-900 pt-2 text-[10.5px] font-bold uppercase tracking-[0.28em] text-slate-900 after:h-px after:flex-1 after:bg-slate-300",
-    dividerClassName: "border-slate-900",
+      "flex items-center gap-4 border-t-[1.5px] border-amber-700 pt-2 text-[10.5px] font-bold uppercase tracking-[0.28em] text-amber-700 after:h-px after:flex-1 after:bg-amber-200",
+    dividerClassName: "border-amber-700",
     entryTitleClassName: "text-[15.5px] font-bold text-slate-900",
-    entrySubtitleClassName: "text-[10.5px] font-semibold uppercase tracking-[0.2em] text-slate-600",
-    entryMetaClassName: "shrink-0 pt-0.5 text-[11.25px] font-semibold uppercase tracking-[0.12em] text-slate-600",
-    projectLinksClassName: "flex flex-wrap gap-x-3 gap-y-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-600 sm:justify-end",
+    entrySubtitleClassName: "text-[10.5px] font-semibold uppercase tracking-[0.2em] text-amber-700",
+    entryMetaClassName: "shrink-0 pt-0.5 text-[11.25px] font-semibold uppercase tracking-[0.12em] text-amber-800",
+    projectLinksClassName: "flex flex-wrap gap-x-3 gap-y-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-amber-700 sm:justify-end",
     headerClassName: "pb-6",
-    roleClassName: "mt-2 text-[12.5px] font-semibold uppercase tracking-[0.24em] text-slate-700",
+    roleClassName: "mt-2 text-[12.5px] font-semibold uppercase tracking-[0.24em] text-amber-800",
     contactClassName: "text-[11px] leading-5 text-slate-600",
     articleClassName: "space-y-2.5 border-b border-slate-300 pb-4 last:border-b-0 last:pb-0",
-    bulletClassName: "space-y-1.5 pl-5 text-[12.85px] leading-[1.65] text-slate-700 marker:text-slate-900",
-    summaryClassName: "space-y-1.5 pl-5 text-[12.85px] leading-[1.65] text-slate-700 marker:text-slate-900",
-    skillsClassName: "space-y-2.5 border-l-2 border-slate-200 pl-4 text-[12.85px] leading-[1.65] text-slate-700",
+    bulletClassName: "space-y-1.5 pl-5 text-[12.85px] leading-[1.65] text-slate-700 marker:text-amber-700",
+    summaryClassName: "space-y-1.5 pl-5 text-[12.85px] leading-[1.65] text-slate-700 marker:text-amber-700",
+    skillsClassName: "space-y-2.5 border-l-2 border-amber-200 pl-4 text-[12.85px] leading-[1.65] text-slate-700",
     sheetClassName: "px-12 py-10",
     stackClassName: "space-y-6",
+    photoFrameClassName: "border-amber-700 text-amber-700",
+    photoDividerClassName: "md:border-amber-200",
   },
+};
+
+const templateContainers: Record<
+  ResumeTemplate,
+  ({
+    data,
+    className,
+    children,
+  }: {
+    data: ResumeData;
+    className?: string;
+    children: React.ReactNode;
+  }) => React.ReactElement
+> = {
+  modern: TemplateModern,
+  minimal: TemplateMinimal,
+  professional: TemplateProfessional,
+  executive: TemplateExecutive,
 };
 
 function Section({
@@ -195,16 +227,20 @@ function SkillsBlock({
   );
 }
 
-function ExecutivePhoto({
+function HeaderPhoto({
   photo,
   position,
+  showPlaceholder = false,
+  frameClassName,
 }: {
   photo: string | null;
   position: number;
+  showPlaceholder?: boolean;
+  frameClassName: string;
 }) {
   if (photo) {
     return (
-      <div className="flex h-[156px] w-[118px] items-center justify-center border-2 border-slate-900 bg-white p-1.5">
+      <div className={`flex h-[156px] w-[118px] items-center justify-center border-2 bg-white p-1.5 ${frameClassName}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photo}
@@ -216,8 +252,12 @@ function ExecutivePhoto({
     );
   }
 
+  if (!showPlaceholder) {
+    return null;
+  }
+
   return (
-    <div className="flex h-[156px] w-[118px] items-center justify-center border-2 border-slate-900 bg-white text-[11px] font-bold uppercase tracking-[0.34em] text-slate-900">
+    <div className={`flex h-[156px] w-[118px] items-center justify-center border-2 bg-white text-[11px] font-bold uppercase tracking-[0.34em] ${frameClassName}`}>
       PHOTO
     </div>
   );
@@ -233,12 +273,52 @@ function ResumeHeader({
   const contacts = getHeaderContacts(data);
   const isModern = data.template === "modern";
   const isExecutive = data.template === "executive";
+  const hasHeaderPhoto = Boolean(data.includePhoto && (data.photo || isExecutive));
   const primaryContacts = contacts.slice(0, 3);
   const secondaryContacts = contacts.slice(3);
 
   return (
     <header className={`border-b pb-5 ${style.dividerClassName} ${style.headerClassName}`}>
-      {isModern ? (
+      {hasHeaderPhoto ? (
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_146px] md:items-start">
+          <div className="min-w-0">
+            <h1 className={style.nameClassName}>{data.personalInfo.fullName || "Your Name"}</h1>
+            <div className={style.roleClassName}>
+              {data.personalInfo.title || "Frontend Developer"}
+            </div>
+            {contacts.length > 0 ? (
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 sm:gap-x-6">
+                {primaryContacts.length > 0 ? (
+                  <div className="grid gap-y-1 text-[11px] leading-5 text-slate-600">
+                    {primaryContacts.map((item) => (
+                      <span key={item} className="break-all">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {secondaryContacts.length > 0 ? (
+                  <div className="grid gap-y-1 text-[11px] leading-5 text-slate-600">
+                    {secondaryContacts.map((item) => (
+                      <span key={item} className="break-all">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <div className={`flex justify-start md:justify-end md:border-l md:pl-7 ${style.photoDividerClassName}`}>
+            <HeaderPhoto
+              photo={data.photo}
+              position={data.photoPosition}
+              showPlaceholder={Boolean(data.includePhoto)}
+              frameClassName={style.photoFrameClassName}
+            />
+          </div>
+        </div>
+      ) : isModern ? (
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_240px] md:items-end">
           <div>
             <h1 className={style.nameClassName}>{data.personalInfo.fullName || "Your Name"}</h1>
@@ -290,8 +370,13 @@ function ResumeHeader({
               </div>
             ) : null}
           </div>
-          <div className="flex justify-start md:justify-end md:border-l md:border-slate-300 md:pl-7">
-            <ExecutivePhoto photo={data.photo} position={data.photoPosition} />
+          <div className={`flex justify-start md:justify-end md:border-l md:pl-7 ${style.photoDividerClassName}`}>
+            <HeaderPhoto
+              photo={data.photo}
+              position={data.photoPosition}
+              showPlaceholder={Boolean(data.includePhoto)}
+              frameClassName={style.photoFrameClassName}
+            />
           </div>
         </div>
       ) : (
@@ -526,12 +611,10 @@ function CertificationsSection({
 
 function ResumeSheet({ data }: { data: ResumeData }) {
   const style = templateStyles[data.template];
+  const TemplateContainer = templateContainers[data.template];
 
   return (
-    <div
-      className={`min-h-[980px] bg-white text-slate-900 ${style.sheetClassName}`}
-      style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
-    >
+    <TemplateContainer data={data} className={style.sheetClassName}>
       <div className={style.stackClassName}>
         <ResumeHeader data={data} style={style} />
 
@@ -548,7 +631,7 @@ function ResumeSheet({ data }: { data: ResumeData }) {
         <EducationSection data={data} style={style} />
         <CertificationsSection items={data.certifications} style={style} />
       </div>
-    </div>
+    </TemplateContainer>
   );
 }
 
@@ -646,6 +729,11 @@ export function ResumePreview({ data, actions }: ResumePreviewProps) {
           <div className="flex min-w-0 flex-wrap gap-2">
             <Badge variant="secondary" className="w-fit">
               {templateStyles[data.template].label}
+            </Badge>
+            <Badge variant="secondary" className="w-fit">
+              {data.backgroundEnabled
+                ? `${data.backgroundTheme} ${data.backgroundIntensity} background`
+                : "Background off"}
             </Badge>
             <Badge variant="secondary" className="w-fit">
               ATS Optimized

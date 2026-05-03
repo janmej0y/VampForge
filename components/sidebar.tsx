@@ -61,7 +61,7 @@ function SidebarContent({
       </div>
 
       {!collapsed ? (
-        <div className="shrink-0 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.82),rgba(10,18,35,0.68))] p-4">
+        <div className="sidebar-status-card shrink-0 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.82),rgba(10,18,35,0.68))] p-4">
           <div className="section-label">Now Editing</div>
           <div className="mt-3 text-sm font-semibold text-white">
             {activeItem?.title ?? "Workspace"}
@@ -117,7 +117,7 @@ function SidebarContent({
       <div className="mt-auto shrink-0 space-y-4">
         <div
           className={cn(
-            "rounded-[1.6rem] border border-primary/18 bg-[linear-gradient(145deg,rgba(34,211,238,0.12),rgba(255,255,255,0.04),rgba(251,191,36,0.08))] p-4",
+            "sidebar-momentum-card rounded-[1.6rem] border border-primary/18 bg-[linear-gradient(145deg,rgba(34,211,238,0.12),rgba(255,255,255,0.04),rgba(251,191,36,0.08))] p-4",
             collapsed && "p-3"
           )}
         >

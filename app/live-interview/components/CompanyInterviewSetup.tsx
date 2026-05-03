@@ -257,7 +257,7 @@ export function CompanyInterviewSetup({
                 />
               </label>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Stored locally in your browser and only sent to Gemini interview routes.
+                Stored locally in the browser and only used for Gemini interview requests. It is needed only when the user wants AI-generated interview rounds.
               </p>
               {startError ? <p className="mt-3 text-sm text-amber-200">{startError}</p> : null}
             </CardContent>

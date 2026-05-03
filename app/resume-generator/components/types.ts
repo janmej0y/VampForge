@@ -5,6 +5,8 @@ export type ResumeTemplate =
   | "executive";
 
 export type ResumePageCount = 1 | 2 | 3;
+export type ResumeBackgroundTheme = "blue" | "purple" | "neutral";
+export type ResumeBackgroundIntensity = "low" | "medium";
 export type UploadState = "idle" | "uploading" | "processing" | "complete" | "error";
 
 export type UploadStatus = {
@@ -64,6 +66,9 @@ export type ResumeData = {
   photo: string | null;
   photoPosition: number;
   includePhoto: boolean;
+  backgroundEnabled: boolean;
+  backgroundTheme: ResumeBackgroundTheme;
+  backgroundIntensity: ResumeBackgroundIntensity;
   atsMode: boolean;
 };
 
