@@ -5,7 +5,6 @@ import {
   Download,
   Eye,
   Headphones,
-  Layers3,
   Mail,
   Phone,
   Sparkles,
@@ -15,7 +14,6 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { downloadTextFile, openGeneratedDocument } from "@/lib/export-utils";
 import { PortfolioForm } from "./components/PortfolioForm";
 import { PortfolioPreview } from "./components/PortfolioPreview";
@@ -410,24 +408,6 @@ export default function PortfolioPage() {
 
   const completion = useMemo(() => portfolioCompletion(portfolioData), [portfolioData]);
 
-  const highlightedProjects = useMemo(
-    () =>
-      portfolioData.projects.filter((project) => project.name || project.description)
-        .length,
-    [portfolioData.projects]
-  );
-
-  const liveLinks = useMemo(
-    () =>
-      [
-        portfolioData.socialLinks.github,
-        portfolioData.socialLinks.linkedin,
-        portfolioData.contact.website,
-        portfolioData.contact.resumeLink,
-      ].filter(Boolean).length,
-    [portfolioData]
-  );
-
   const generatedDocument = useMemo(
     () => createPortfolioDocument(portfolioData),
     [portfolioData]
@@ -695,57 +675,6 @@ export default function PortfolioPage() {
         }
       />
 
-      <section className="grid w-full max-w-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        <Card className="bg-white/[0.045] fade-in-up">
-          <CardContent className="flex min-w-0 items-center justify-between gap-4 pt-6">
-            <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Portfolio Completion</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{completion}%</p>
-              <p className="mt-1 break-words text-sm text-slate-400">
-                Core sections tracked.
-              </p>
-            </div>
-            <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/15 p-4">
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white/[0.045] fade-in-up delay-1">
-          <CardContent className="flex min-w-0 items-center justify-between gap-4 pt-6">
-            <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Featured Projects</p>
-              <p className="mt-2 text-3xl font-semibold text-white">
-                {highlightedProjects}
-              </p>
-              <p className="mt-1 break-words text-sm text-slate-400">
-                Case studies with links.
-              </p>
-            </div>
-            <div className="shrink-0 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4">
-              <Layers3 className="h-5 w-5 text-cyan-300" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white/[0.045] fade-in-up delay-2">
-          <CardContent className="flex min-w-0 items-center justify-between gap-4 pt-6">
-            <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Portfolio Reach</p>
-              <p className="mt-2 text-3xl font-semibold text-white">
-                {liveLinks}/4
-              </p>
-              <p className="mt-1 break-words text-sm text-slate-400">
-                Resume, GitHub, LinkedIn, site.
-              </p>
-            </div>
-            <div className="shrink-0 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
-              <Eye className="h-5 w-5 text-emerald-300" />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
       <section className="grid w-full max-w-full grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="min-w-0">
           <PortfolioForm
@@ -798,44 +727,63 @@ export default function PortfolioPage() {
           />
         </div>
 
-        <div className="min-w-0 xl:sticky xl:top-24 xl:h-fit">
+        <div className="min-w-0 space-y-6 xl:sticky xl:top-24 xl:h-fit">
           <PortfolioPreview data={portfolioData} />
-        </div>
-      </section>
 
-      <section className="section-card mesh-card premium-ring overflow-hidden border-primary/15">
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.15),transparent_68%)]" />
-        <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl space-y-3">
-            <Badge variant="secondary" className="w-fit gap-2 border-white/10 bg-white/5 text-slate-100">
-              <Headphones className="h-3.5 w-3.5 text-primary" />
-              Direct Portfolio Help
-            </Badge>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                Need a custom portfolio or quick help with your builder?
-              </h2>
-              <p className="max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
-                Reach out directly for custom portfolio generation, guided edits, or fast
-                support while building your portfolio.
-              </p>
+          <section className="relative overflow-hidden rounded-[1.8rem] border border-primary/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(8,15,30,0.88),rgba(251,191,36,0.08))] p-5 shadow-[0_24px_70px_rgba(2,6,23,0.2)]">
+            <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
+            <div className="relative space-y-5">
+              <div className="space-y-3">
+                <Badge variant="secondary" className="w-fit gap-2 border-white/10 bg-white/5 text-slate-100">
+                  <Headphones className="h-3.5 w-3.5 text-primary" />
+                  Direct Portfolio Help
+                </Badge>
+                <div>
+                  <h2 className="text-xl font-semibold tracking-[-0.03em] text-white">
+                    Need a custom portfolio?
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Use this panel when the builder needs a custom section, guided edits,
+                    or a fast portfolio generation request.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                    Phone
+                  </div>
+                  <div className="mt-2 break-words text-sm font-semibold text-white">
+                    {CUSTOM_PORTFOLIO_PHONE}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                  <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                    Email
+                  </div>
+                  <div className="mt-2 break-words text-sm font-semibold text-white">
+                    {CUSTOM_PORTFOLIO_EMAIL}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Button asChild variant="secondary" className="w-full sm:flex-1">
+                  <a href={CUSTOM_PORTFOLIO_TEL}>
+                    <Phone className="h-4 w-4" />
+                    Call
+                  </a>
+                </Button>
+                <Button asChild className="w-full sm:flex-1">
+                  <a href={CUSTOM_PORTFOLIO_MAILTO}>
+                    <Mail className="h-4 w-4" />
+                    Request Help
+                  </a>
+                </Button>
+              </div>
             </div>
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end">
-            <Button asChild variant="secondary" className="w-full sm:w-auto">
-              <a href={CUSTOM_PORTFOLIO_TEL}>
-                <Phone className="h-4 w-4" />
-                Helpline: {CUSTOM_PORTFOLIO_PHONE}
-              </a>
-            </Button>
-            <Button asChild className="w-full sm:w-auto">
-              <a href={CUSTOM_PORTFOLIO_MAILTO}>
-                <Mail className="h-4 w-4" />
-                Custom Portfolio Generation
-              </a>
-            </Button>
-          </div>
+          </section>
         </div>
       </section>
     </div>

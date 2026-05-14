@@ -114,6 +114,44 @@ const backgroundIntensityOptions: Array<{
   { value: "medium", label: "Medium" },
 ];
 
+const resumeFlow = [
+  "Header",
+  "Summary",
+  "Skills",
+  "Experience",
+  "Projects",
+  "Proof",
+];
+
+function BuilderRoadmap() {
+  return (
+    <div className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(255,255,255,0.045),rgba(251,191,36,0.08))] p-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <div className="section-label">Resume Flow</div>
+          <div className="mt-2 text-lg font-semibold text-white">ATS resume in recruiter order</div>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Fill identity first, then add proof sections that support your target role.
+          </p>
+        </div>
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:min-w-[28rem]">
+          {resumeFlow.map((item, index) => (
+            <div
+              key={item}
+              className="flex min-w-0 items-center gap-2 rounded-2xl border border-white/10 bg-slate-950/45 px-3 py-2 text-sm text-slate-200"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
+                {index + 1}
+              </span>
+              <span className="truncate">{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FormSection({
   icon: Icon,
   step,
@@ -130,21 +168,22 @@ function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="section-card p-5 sm:p-6">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+    <section className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.9),rgba(10,18,35,0.72))] p-5 shadow-[0_20px_60px_rgba(2,6,23,0.16)] sm:p-6">
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(94,234,212,0.5),transparent)]" />
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
             <Icon className="h-5 w-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="section-label">{step}</div>
-            <div className="mt-2 text-lg font-semibold text-white">{title}</div>
-            <p className="mt-1 max-w-lg text-sm leading-5 text-muted-foreground">
+            <div className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white">{title}</div>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
               {description}
             </p>
           </div>
         </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
+        {action ? <div className="flex shrink-0 flex-wrap gap-2">{action}</div> : null}
       </div>
       {children}
     </section>
@@ -287,6 +326,8 @@ export function ResumeForm({
       </CardHeader>
 
       <CardContent className="space-y-6 pt-6">
+        <BuilderRoadmap />
+
         <FormSection
           icon={FileUser}
           step="Step 01"
@@ -294,6 +335,11 @@ export function ResumeForm({
           description="Set contact details and page count."
         >
           <div className="space-y-6">
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
+              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+                <FileUser className="h-4 w-4 text-primary" />
+                Resume header
+              </div>
             <div className="grid gap-4 md:grid-cols-2">
               {personalFields.map((field) => (
                 <div key={field.key} className="space-y-2">
@@ -310,8 +356,9 @@ export function ResumeForm({
                 </div>
               ))}
             </div>
+            </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <ToggleCard
                 checked={data.atsMode}
                 label="ATS Friendly Mode"
@@ -326,6 +373,11 @@ export function ResumeForm({
               />
             </div>
 
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
+              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+                <FileText className="h-4 w-4 text-primary" />
+                Layout controls
+              </div>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">
@@ -393,6 +445,7 @@ export function ResumeForm({
                   Keeps the background subtle at 5-10% visual intensity for ATS safety.
                 </p>
               </div>
+            </div>
             </div>
 
             {isExecutiveTemplate ? (
@@ -486,6 +539,7 @@ export function ResumeForm({
           }
         >
           <div className="space-y-6">
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-200">
                 Professional Summary
@@ -497,13 +551,16 @@ export function ResumeForm({
                 onChange={(event) => onSummaryChange(event.target.value)}
               />
             </div>
+            </div>
 
-            <TagInput
-              label="Skills"
-              placeholder="Add a skill and press Enter"
-              value={data.skills}
-              onChange={onSkillsChange}
-            />
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
+              <TagInput
+                label="Skills"
+                placeholder="Add a skill and press Enter"
+                value={data.skills}
+                onChange={onSkillsChange}
+              />
+            </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">

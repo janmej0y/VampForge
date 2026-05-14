@@ -16,10 +16,10 @@ export const navigation = [
     description: "Progress and quick actions.",
   },
   {
-    title: "Portfolio Builder",
-    href: "/portfolio",
-    icon: FolderKanban,
-    description: "Live portfolio editing.",
+    title: "Resume Analyzer",
+    href: "/resume-analyzer",
+    icon: FileBarChart2,
+    description: "ATS fit and fixes.",
   },
   {
     title: "Resume Generator",
@@ -28,22 +28,22 @@ export const navigation = [
     description: "Clean resumes and exports.",
   },
   {
-    title: "Live Interview",
-    href: "/live-interview",
-    icon: BrainCircuit,
-    description: "Timed AI interview practice.",
-  },
-  {
-    title: "Resume Analyzer",
-    href: "/resume-analyzer",
-    icon: FileBarChart2,
-    description: "ATS fit and fixes.",
+    title: "Portfolio Builder",
+    href: "/portfolio",
+    icon: FolderKanban,
+    description: "Live portfolio editing.",
   },
   {
     title: "Publish Portfolio",
     href: "/deploy",
     icon: Rocket,
     description: "Package portfolio code.",
+  },
+  {
+    title: "Live Interview",
+    href: "/live-interview",
+    icon: BrainCircuit,
+    description: "Timed AI interview practice.",
   },
   {
     title: "Settings",
