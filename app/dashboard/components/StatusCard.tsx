@@ -33,34 +33,35 @@ export function StatusCard({
     <motion.article
       variants={dashboardItem}
       whileHover={{ y: -4, scale: 1.01 }}
-      className="group w-full max-w-full overflow-hidden rounded-2xl p-px transition duration-300"
+      className="group relative w-full max-w-full overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.96),rgba(10,18,35,0.9))] p-5 shadow-[0_24px_70px_rgba(2,6,23,0.22)] transition duration-300 sm:p-6"
     >
-      <div className={`rounded-2xl bg-gradient-to-br ${accent} p-px opacity-90 transition duration-300 group-hover:opacity-100`}>
-        <div className="h-full w-full max-w-full rounded-[calc(1rem-1px)] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-5 backdrop-blur-2xl sm:p-6">
+      <div className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accent}`} />
+      <div className={`pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-gradient-to-br ${accent} opacity-20 blur-3xl transition duration-300 group-hover:opacity-30`} />
+      <div className="relative">
           <div className="flex min-w-0 items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-100/70">
+              <div className="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-100">
                 {label}
               </div>
-              <h2 className="mt-3 truncate text-xl font-semibold tracking-[-0.03em] text-white">
+              <h2 className="mt-3 truncate text-xl font-semibold tracking-[-0.03em] text-white drop-shadow-sm">
                 {title}
               </h2>
             </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/45">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <Icon className="h-5 w-5 text-cyan-100 transition duration-300 group-hover:scale-110" />
             </div>
           </div>
 
-          <p className="mt-4 min-h-12 break-words text-sm leading-6 text-slate-400">
+          <p className="mt-4 min-h-12 break-words text-sm leading-6 text-slate-300">
             {description}
           </p>
 
           <div className="mt-6 flex min-w-0 flex-wrap items-end justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-3xl font-semibold tracking-[-0.05em] text-white">
+              <div className="text-3xl font-semibold tracking-[-0.05em] text-white drop-shadow-sm">
                 {metric}
               </div>
-              <div className="mt-1 text-sm text-slate-400">Current status</div>
+              <div className="mt-1 text-sm text-slate-300">Current status</div>
             </div>
             <Button asChild variant="secondary" className="max-w-full shrink-0">
               <Link href={href}>
@@ -79,7 +80,6 @@ export function StatusCard({
               transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </div>
-        </div>
       </div>
     </motion.article>
   );
