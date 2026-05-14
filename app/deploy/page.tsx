@@ -17,26 +17,44 @@ import {
   type DeploymentStep,
 } from "./components/types";
 
+type GithubPushResponse = {
+  url?: string;
+  owner?: string;
+  repo?: string;
+  error?: string;
+};
+
+type GithubMeResponse = {
+  connected: boolean;
+  username?: string;
+};
+
+function sleep(duration: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, duration);
+  });
+}
+
 const deploymentSteps: DeploymentStep[] = [
   {
     id: "prepare",
     label: "Preparing Portfolio Files...",
-    description: "Collecting portfolio metadata, repository details, and publish settings.",
+    description: "Checking portfolio files.",
   },
   {
     id: "build",
     label: "Packaging Source...",
-    description: "Generating a clean project package that is ready to live in a GitHub repository.",
+    description: "Creating source package.",
   },
   {
     id: "upload",
     label: "Pushing to GitHub...",
-    description: "Simulating the repository push into the connected GitHub account.",
+    description: "Preparing GitHub handoff.",
   },
   {
     id: "success",
     label: "GitHub Push Complete",
-    description: "The portfolio code is ready in GitHub and can now be deployed on any hosting platform.",
+    description: "Code package is ready.",
   },
 ];
 
@@ -45,8 +63,8 @@ const initialFormData: DeploymentFormData = {
   portfolioName: "Janmejoy Portfolio",
   lastUpdated: "Today, 9:42 PM",
   subdomain: "janmejoy",
-  customDomain: "portfolio.janmejoy.dev",
-  githubRepoName: "vampforge-portfolio",
+  customDomain: "janmejoy.is-a.dev",
+  githubRepoName: "janmejoy-portfolio",
   githubConnected: false,
   githubUsername: "",
   environment: "production",
@@ -57,21 +75,21 @@ const initialHistory: DeploymentHistoryItem[] = [
     id: "history-1",
     date: "Today",
     status: "Pushed",
-    url: "github.com/janmejoy/vampforge-portfolio",
+    url: "github.com/janmej0y/My-Portfolio",
     environment: "production",
   },
   {
     id: "history-2",
     date: "Yesterday",
     status: "Preview",
-    url: "github.com/janmejoy/vampforge-portfolio-preview",
+    url: "github.com/janmej0y/RentHub",
     environment: "preview",
   },
   {
     id: "history-3",
     date: "Apr 07, 2026",
     status: "Pushed",
-    url: "github.com/janmejoy/janmejoy-portfolio",
+    url: "github.com/janmej0y/Online-Voting-System",
     environment: "production",
   },
 ];
@@ -87,29 +105,51 @@ export default function DeployPage() {
   const [history, setHistory] = useState<DeploymentHistoryItem[]>(initialHistory);
   const [githubConnectionError, setGithubConnectionError] = useState<string | null>(null);
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const githubCode = params.get("code");
-    const githubState = params.get("state");
+    const syncGithubConnection = async () => {
+      try {
+        const response = await fetch("/api/github/me", { cache: "no-store" });
 
-    if (githubCode && githubState === "vampforge-github-connect") {
-      setFormData((current) => ({
-        ...current,
-        githubConnected: true,
-        githubUsername: "github-oauth-pending",
-      }));
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as GithubMeResponse;
+
+        if (data.connected && data.username) {
+          const username = data.username;
+          setFormData((current) => ({
+            ...current,
+            githubConnected: true,
+            githubUsername: username,
+          }));
+          setGithubConnectionError(null);
+        }
+      } catch {
+        setGithubConnectionError("Could not verify GitHub connection.");
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const githubStatus = params.get("github");
+
+    if (githubStatus === "connected") {
       setGithubConnectionError(null);
+      window.history.replaceState(null, "", "/deploy");
+    } else if (githubStatus && githubStatus !== "connected") {
+      setGithubConnectionError(
+        githubStatus === "missing-env"
+          ? "Add GitHub environment variables in Vercel before connecting."
+          : `GitHub connection failed: ${githubStatus}.`
+      );
       window.history.replaceState(null, "", "/deploy");
     }
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+    void syncGithubConnection();
 
+    return () => {
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);
       }
@@ -144,13 +184,9 @@ export default function DeployPage() {
     }));
   };
 
-  const handleDeploy = () => {
+  const handleDeploy = async () => {
     if (!formData.githubConnected) {
       return;
-    }
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
     }
 
     setDeploymentStatus("deploying");
@@ -160,44 +196,64 @@ export default function DeployPage() {
     setLiveUrl("");
     setGithubConnectionError(null);
 
-    const nextRepoName = (formData.githubRepoName || formData.subdomain || "portfolio-source")
-      .trim()
-      .replace(/\s+/g, "-")
-      .toLowerCase();
-    const nextUrl = `https://github.com/${formData.githubUsername || "connected-developer"}/${nextRepoName}`;
+    try {
+      setProgress(18);
+      setActiveStepIndex(0);
+      await sleep(450);
+      setProgress(42);
+      setActiveStepIndex(1);
 
-    const progressPoints = [18, 42, 73, 100];
-    let stepCursor = 0;
+      const response = await fetch("/api/github/push", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          portfolioName: formData.portfolioName,
+          repoName: formData.githubRepoName || formData.subdomain,
+          customDomain: formData.customDomain,
+          environment: formData.environment,
+        }),
+      });
 
-    intervalRef.current = setInterval(() => {
-      setProgress(progressPoints[stepCursor] ?? 100);
-      setActiveStepIndex(stepCursor);
-      stepCursor += 1;
+      const result = (await response.json()) as GithubPushResponse;
 
-      if (stepCursor >= progressPoints.length) {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-
-        setDeploymentStatus("success");
-        setActiveStepIndex(deploymentSteps.length - 1);
-        setLiveUrl(nextUrl);
-        setFormData((current) => ({
-          ...current,
-          lastUpdated: "Just now",
-        }));
-        setHistory((current) => [
-          {
-            id: `history-${Date.now()}`,
-            date: "Today",
-            status: formData.environment === "production" ? "Pushed" : "Preview",
-            url: nextUrl.replace("https://", ""),
-            environment: formData.environment,
-          },
-          ...current,
-        ]);
+      if (!response.ok || !result.url) {
+        throw new Error(result.error || "GitHub push failed.");
       }
-    }, 950);
+
+      const pushedUrl = result.url;
+      setProgress(73);
+      setActiveStepIndex(2);
+      await sleep(450);
+
+      setDeploymentStatus("success");
+      setProgress(100);
+      setActiveStepIndex(deploymentSteps.length - 1);
+      setLiveUrl(pushedUrl);
+      setFormData((current) => ({
+        ...current,
+        githubUsername: result.owner || current.githubUsername,
+        lastUpdated: "Just now",
+      }));
+      setHistory((current) => [
+        {
+          id: `history-${Date.now()}`,
+          date: "Today",
+          status: formData.environment === "production" ? "Pushed" : "Preview",
+          url: pushedUrl.replace("https://", ""),
+          environment: formData.environment,
+        },
+        ...current,
+      ]);
+    } catch (error) {
+      setDeploymentStatus("idle");
+      setProgress(0);
+      setActiveStepIndex(0);
+      setGithubConnectionError(
+        error instanceof Error ? error.message : "GitHub push failed."
+      );
+    }
   };
 
   const handleCopyUrl = async () => {
@@ -219,8 +275,8 @@ export default function DeployPage() {
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       <PageHeader
         badge="Publish Portfolio"
-        title="Publish Portfolio Code"
-        description="Prepare portfolio code, push it to the user's connected GitHub account, and then deploy it on any platform the user prefers."
+        title="Publish portfolio code"
+        description="Package your portfolio for GitHub and hosting."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="success" className="gap-2">
@@ -229,7 +285,7 @@ export default function DeployPage() {
             </Badge>
             <Badge variant="secondary" className="gap-2">
               <Sparkles className="h-3.5 w-3.5" />
-              GitHub Push Flow
+                GitHub Flow
             </Badge>
           </div>
         }
@@ -244,7 +300,7 @@ export default function DeployPage() {
                 {formData.environment === "production" ? "Main" : "Preview"}
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Switch between a final push target and a preview package flow.
+                Main or preview.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/10 p-4">
@@ -276,7 +332,7 @@ export default function DeployPage() {
                 {progress}%
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Step-based code preparation across prepare, package, push, and handoff.
+                Prepare, package, handoff.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
@@ -309,26 +365,25 @@ export default function DeployPage() {
 
               if (!githubClientId) {
                 setGithubConnectionError(
-                  "Add NEXT_PUBLIC_GITHUB_CLIENT_ID to enable real GitHub account connection. Pushing code stays locked until GitHub OAuth is configured."
+                  "Add NEXT_PUBLIC_GITHUB_CLIENT_ID in Vercel to enable GitHub OAuth."
                 );
                 return;
               }
 
               setGithubConnectionError(null);
-              const redirectUri = encodeURIComponent(`${window.location.origin}/deploy`);
+              const redirectUri = encodeURIComponent(`${window.location.origin}/api/github/callback`);
               const scope = encodeURIComponent("read:user user:email repo");
               window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=${scope}&state=vampforge-github-connect`;
             }}
-            onDisconnectGithub={() =>
-              {
-                setGithubConnectionError(null);
-                setFormData((current) => ({
-                  ...current,
-                  githubConnected: false,
-                  githubUsername: "",
-                }));
-              }
-            }
+            onDisconnectGithub={async () => {
+              await fetch("/api/github/disconnect", { method: "POST" });
+              setGithubConnectionError(null);
+              setFormData((current) => ({
+                ...current,
+                githubConnected: false,
+                githubUsername: "",
+              }));
+            }}
             onDeploy={handleDeploy}
             isDeploying={deploymentStatus === "deploying"}
           />

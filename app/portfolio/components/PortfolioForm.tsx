@@ -107,19 +107,19 @@ const portfolioTemplates: Array<{
   {
     id: "nova",
     name: "Nova SaaS",
-    description: "Premium startup-grade portfolio with glass cards, recruiter sections, and smooth product motion.",
+    description: "Clean startup-style portfolio.",
     accent: "from-cyan-300 via-sky-400 to-violet-400",
   },
   {
     id: "orbit",
     name: "Orbit Motion",
-    description: "Cinematic full-stack portfolio with animated orbits, cursor glow, floating cards, and bold hero depth.",
+    description: "Cinematic motion and depth.",
     accent: "from-fuchsia-300 via-violet-400 to-cyan-300",
   },
   {
     id: "terminal",
     name: "Terminal Neon",
-    description: "Developer-console aesthetic with scanlines, animated command text, neon buttons, and matrix-style ambience.",
+    description: "Console-inspired neon style.",
     accent: "from-emerald-300 via-cyan-300 to-lime-200",
   },
 ];
@@ -171,7 +171,7 @@ function FormSection({
           <div>
             <div className="section-label">{step}</div>
             <div className="mt-2 text-lg font-semibold text-white">{title}</div>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            <p className="mt-1 max-w-lg text-sm leading-5 text-muted-foreground">
               {description}
             </p>
           </div>
@@ -265,10 +265,9 @@ export function PortfolioForm({
   return (
     <Card className="bg-white/[0.045] fade-in-up">
       <CardHeader className="space-y-2 border-b border-white/10">
-        <CardTitle className="text-white">Premium Portfolio Builder</CardTitle>
+        <CardTitle className="text-white">Portfolio Builder</CardTitle>
         <CardDescription>
-          Build a recruiter-ready developer portfolio with modern landing-page
-          sections, stronger hierarchy, and smarter content controls.
+          Build a polished portfolio with live preview.
         </CardDescription>
       </CardHeader>
 
@@ -277,7 +276,7 @@ export function PortfolioForm({
           icon={LayoutTemplate}
           step="Template"
           title="Portfolio Template"
-          description="Choose a visual system for the live preview. Each template has different motion, background, text, button, and cursor effects."
+          description="Choose a visual direction."
         >
           <div className="grid gap-4 md:grid-cols-3">
             {portfolioTemplates.map((template) => {
@@ -298,14 +297,14 @@ export function PortfolioForm({
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold text-white">{template.name}</div>
-                      <p className="mt-2 text-xs leading-5 text-slate-400">{template.description}</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-400">{template.description}</p>
                     </div>
                     <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${
                       isSelected
                         ? "border-cyan-300/40 bg-cyan-300 text-slate-950"
                         : "border-white/10 bg-white/5 text-slate-400"
                     }`}>
-                      {isSelected ? "✓" : ""}
+                      {isSelected ? <CheckCircle2 className="h-4 w-4" /> : null}
                     </div>
                   </div>
                 </button>
@@ -318,7 +317,7 @@ export function PortfolioForm({
           icon={UserRound}
           step="Step 01"
           title="Hero and Identity"
-          description="Define the core messaging that powers your hero section and recruiter-first introduction."
+          description="Set name, title, and intro."
           action={
             <Button type="button" variant="secondary" onClick={onGenerateSummary}>
               <WandSparkles className="h-4 w-4" />
@@ -340,7 +339,7 @@ export function PortfolioForm({
               <label className="text-sm font-medium text-slate-200">Role</label>
               <Input
                 value={data.title}
-                placeholder="Full Stack Developer"
+                placeholder="Web Developer"
                 onChange={(event) => onFieldChange("title", event.target.value)}
               />
             </div>
@@ -363,7 +362,7 @@ export function PortfolioForm({
           icon={Sparkles}
           step="Step 02"
           title="About and Positioning"
-          description="Fill the About section with a clear story, goals, and technical focus."
+          description="Add story, goals, and focus."
         >
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
@@ -429,7 +428,7 @@ export function PortfolioForm({
           icon={Shapes}
           step="Step 03"
           title="Skills and Contact"
-          description="Add categorized skills, recruiter-facing links, and the essentials for your contact section."
+          description="Add skills, links, and contact."
         >
           <div className="space-y-6">
             <SkillTagInput
@@ -444,32 +443,32 @@ export function PortfolioForm({
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">Email</label>
                 <Input
-                  value={data.contact.email}
-                  placeholder="janmejoy@email.com"
+                value={data.contact.email}
+                  placeholder="janmejoymahato529@gmail.com"
                   onChange={(event) => onContactChange("email", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">Phone</label>
                 <Input
-                  value={data.contact.phone}
-                  placeholder="+91 98765 43210"
+                value={data.contact.phone}
+                  placeholder="+91 7477661933"
                   onChange={(event) => onContactChange("phone", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">Location</label>
                 <Input
-                  value={data.contact.location}
-                  placeholder="Bengaluru, India"
+                value={data.contact.location}
+                  placeholder="Kolkata, India"
                   onChange={(event) => onContactChange("location", event.target.value)}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">Website</label>
                 <Input
-                  value={data.contact.website}
-                  placeholder="https://janmejoy.dev"
+                value={data.contact.website}
+                  placeholder="https://janmejoy.is-a.dev"
                   onChange={(event) => onContactChange("website", event.target.value)}
                 />
               </div>
@@ -478,8 +477,8 @@ export function PortfolioForm({
                   Resume Download Link
                 </label>
                 <Input
-                  value={data.contact.resumeLink}
-                  placeholder="https://janmejoy.dev/resume.pdf"
+                value={data.contact.resumeLink}
+                  placeholder="https://janmejoy.is-a.dev"
                   onChange={(event) => onContactChange("resumeLink", event.target.value)}
                 />
               </div>
@@ -618,7 +617,7 @@ export function PortfolioForm({
           icon={FolderKanban}
           step="Step 04"
           title="Projects"
-          description="Create premium case-study cards with visuals, links, and polished descriptions."
+          description="Add project cards and links."
           action={
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="secondary" onClick={onEnhanceProjects}>
@@ -654,7 +653,7 @@ export function PortfolioForm({
           icon={BriefcaseBusiness}
           step="Step 05"
           title="Experience"
-          description="Build the recruiter timeline section with strong roles and concise delivery stories."
+          description="Add roles and delivery notes."
           action={
             <Button type="button" variant="secondary" onClick={onAddExperience}>
               <Plus className="h-4 w-4" />
@@ -681,7 +680,7 @@ export function PortfolioForm({
           icon={GraduationCap}
           step="Step 06"
           title="Education"
-          description="Add degree details for the education cards or timeline."
+          description="Add degree details."
           action={
             <Button type="button" variant="secondary" onClick={onAddEducation}>
               <Plus className="h-4 w-4" />
@@ -708,7 +707,7 @@ export function PortfolioForm({
           icon={Award}
           step="Step 07"
           title="Achievements"
-          description="Feature certifications, awards, hackathons, and standout proof points."
+          description="Add awards and proof points."
           action={
             <Button type="button" variant="secondary" onClick={onAddAchievement}>
               <Plus className="h-4 w-4" />

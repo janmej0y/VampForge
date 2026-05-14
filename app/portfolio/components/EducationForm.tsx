@@ -48,7 +48,7 @@ export function EducationForm({
           <label className="text-sm font-medium text-slate-200">Institution</label>
           <Input
             value={item.institution}
-            placeholder="Tech University"
+            placeholder="Greater Kolkata College of Engineering & Management"
             onChange={(event) => onChange("institution", event.target.value)}
           />
         </div>

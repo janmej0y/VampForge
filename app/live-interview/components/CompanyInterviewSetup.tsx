@@ -95,25 +95,26 @@ export function CompanyInterviewSetup({
             </Badge>
             <div>
               <h2 className="text-3xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-                Practice like the company is really on the call
+                Choose your interview style
               </h2>
-              <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-                Gemini generates one company-style question at a time, listens to your
-                spoken answer, digs deeper with follow-ups, and scores like a real interviewer.
+              <p className="mt-4 text-sm leading-6 text-slate-300 sm:text-base">
+                Add Gemini for AI follow-ups, or start with local questions based on your setup.
               </p>
             </div>
           </div>
 
           <Button
             onClick={onStart}
-            disabled={!hasGeminiApiKey || !hasMediaPermissions || isGeneratingQuestion}
+            disabled={!hasMediaPermissions || isGeneratingQuestion}
           >
             <PlayCircle className="h-4 w-4" />
             {isGeneratingQuestion
               ? "Preparing Interview"
               : hasGeminiApiKey && hasMediaPermissions
                 ? "Start Company Interview"
-                : "Complete Setup"}
+                : hasMediaPermissions
+                  ? "Start Basic Interview"
+                  : "Allow Devices First"}
           </Button>
         </div>
       </motion.section>
@@ -145,7 +146,7 @@ export function CompanyInterviewSetup({
                         <Sparkles className="h-4 w-4 text-primary" />
                         {COMPANY_LABELS[company]}
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-400">
+                      <p className="mt-2 text-sm leading-5 text-slate-400">
                         {COMPANY_STYLE_GUIDE[company]}
                       </p>
                     </button>
@@ -250,14 +251,14 @@ export function CompanyInterviewSetup({
                   type="password"
                   value={geminiApiKey}
                   onChange={(event) => onGeminiApiKeyChange(event.target.value)}
-                  placeholder="Paste your Gemini API key"
+                  placeholder="Optional Gemini API key"
                   autoComplete="off"
                   spellCheck={false}
                   className="font-mono"
                 />
               </label>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                Stored locally in the browser and only used for Gemini interview requests. It is needed only when the user wants AI-generated interview rounds.
+              <p className="mt-3 text-sm leading-5 text-slate-400">
+                Optional. Without it, VampForge uses local questions and rule-based scoring.
               </p>
               {startError ? <p className="mt-3 text-sm text-amber-200">{startError}</p> : null}
             </CardContent>

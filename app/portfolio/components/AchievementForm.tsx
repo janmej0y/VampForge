@@ -49,7 +49,7 @@ export function AchievementForm({
           <label className="text-sm font-medium text-slate-200">Title</label>
           <Input
             value={item.title}
-            placeholder="AWS Certified Developer"
+            placeholder="Cybersecurity Virtual Internship"
             onChange={(event) => onChange("title", event.target.value)}
           />
         </div>

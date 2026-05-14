@@ -9,11 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "@radix-ui/react-slot": "^1.2.4",
     "@types/three": "^0.184.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "docx": "^9.6.1",
+    "firebase": "^12.13.0",
     "framer-motion": "^12.38.0",
     "jspdf": "^4.2.1",
     "jszip": "^3.10.1",

@@ -43,20 +43,20 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <AppThemeProvider value={{ theme, toggleTheme }}>
       <div className={`page-shell relative min-h-screen overflow-x-hidden ${theme === "light" ? "app-light" : "app-dark"}`}>
-        <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:76px_76px] opacity-[0.04]" />
+        <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:96px_96px] opacity-[0.035]" />
         <div
-          className={`pointer-events-none absolute left-0 top-8 h-72 w-72 -translate-x-1/3 rounded-full blur-3xl orbital-drift ${
-            theme === "light" ? "bg-sky-300/24" : "bg-white/10"
+          className={`pointer-events-none absolute inset-x-0 top-0 h-56 ${
+            theme === "light" ? "bg-[linear-gradient(180deg,rgba(20,184,166,0.12),transparent)]" : "bg-[linear-gradient(180deg,rgba(20,184,166,0.1),transparent)]"
           }`}
         />
         <div
-          className={`pointer-events-none absolute right-0 top-20 h-96 w-96 translate-x-1/3 rounded-full blur-3xl orbital-drift delay-2 ${
-            theme === "light" ? "bg-blue-300/18" : "bg-white/8"
+          className={`pointer-events-none absolute inset-y-0 right-0 w-1/3 ${
+            theme === "light" ? "bg-[linear-gradient(270deg,rgba(245,158,11,0.08),transparent)]" : "bg-[linear-gradient(270deg,rgba(245,158,11,0.07),transparent)]"
           }`}
         />
         <div
-          className={`pointer-events-none absolute bottom-[-7rem] left-1/3 h-80 w-80 rounded-full blur-3xl pulse-soft ${
-            theme === "light" ? "bg-cyan-300/18" : "bg-white/6"
+          className={`pointer-events-none absolute inset-y-0 left-0 w-1/4 ${
+            theme === "light" ? "bg-[linear-gradient(90deg,rgba(15,23,42,0.035),transparent)]" : "bg-[linear-gradient(90deg,rgba(255,255,255,0.045),transparent)]"
           }`}
         />
         <div

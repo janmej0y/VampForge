@@ -83,10 +83,10 @@ export default function LoginPage() {
               Firebase-ready auth
             </div>
             <h1 className="mt-6 text-5xl font-semibold tracking-[-0.06em] text-slate-950 sm:text-7xl">
-              Login to your VampForge workspace.
+              Login to VampForge.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              Email OTP and Google sign-in UI are ready for Firebase. Add your Firebase project keys to make the login flow live.
+              Add Firebase keys to enable live sign-in.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {["Portfolio drafts", "Resume exports", "Deploy history"].map((item) => (
@@ -105,7 +105,7 @@ export default function LoginPage() {
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Sign in</h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Use email OTP or continue with Google.
+                  Use email OTP or Google.
                 </p>
               </div>
             </div>
@@ -162,8 +162,8 @@ export default function LoginPage() {
                 </div>
               ) : null}
 
-              <div className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs leading-6 text-slate-500">
-                Firebase package install was not completed in this environment because npm hit a network reset. The page is prepared for Firebase keys and can be connected once the dependency/backend endpoint is available.
+              <div className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs leading-5 text-slate-500">
+                Firebase-ready UI. Connect Auth to create real sessions.
               </div>
             </div>
           </div>

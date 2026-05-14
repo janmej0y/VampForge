@@ -21,8 +21,7 @@ const dashboardCards = {
   left: [
     {
       title: "Portfolio Status",
-      description:
-        "Public profile is ready with featured projects, social links, and deployable portfolio sections.",
+      description: "Public profile is almost ready.",
       metric: "Live",
       label: "Portfolio",
       href: "/portfolio",
@@ -33,8 +32,7 @@ const dashboardCards = {
     },
     {
       title: "Resume Status",
-      description:
-        "ATS structure, one-page fit, and export formats are ready for the next application round.",
+      description: "ATS layout and exports are ready.",
       metric: "91/100",
       label: "Resume",
       href: "/resume-generator",
@@ -47,8 +45,7 @@ const dashboardCards = {
   right: [
     {
       title: "Recruiter Signal",
-      description:
-        "Keyword match, portfolio proof, and interview confidence are trending upward this week.",
+      description: "Keywords and proof are improving.",
       metric: "High",
       label: "Signal",
       href: "/resume-analyzer",
@@ -59,8 +56,7 @@ const dashboardCards = {
     },
     {
       title: "Interview Readiness",
-      description:
-        "Recent practice rounds show stronger structure, better timing, and clearer technical tradeoffs.",
+      description: "Practice is trending up.",
       metric: "8.4/10",
       label: "Interview",
       href: "/live-interview",
@@ -94,13 +90,13 @@ export default function DashboardPage() {
       <section className="grid w-full max-w-full grid-cols-1 gap-6 lg:grid-cols-2">
         <ActivityCard
           title="Activity"
-          description="Everything recently improved across portfolio, resume, interview prep, and deployment."
+          description="Recent workspace updates."
           icon={Activity}
           items={recentActivity}
         />
         <ActivityCard
           title="Portfolio Momentum"
-          description="A focused view of the updates that affect your public developer identity."
+          description="Updates that improve your profile."
           icon={FolderKanban}
           items={portfolioActivity.length ? portfolioActivity : recentActivity.slice(0, 3)}
         />

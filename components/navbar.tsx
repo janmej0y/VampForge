@@ -32,7 +32,7 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
   const handleSearch = () => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) {
-      setSearchFeedback("Search a page like portfolio, resume, deploy, or settings.");
+      setSearchFeedback("Try portfolio, resume, interview, deploy, or settings.");
       return;
     }
 
@@ -48,7 +48,7 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 mb-6 w-full max-w-full">
-      <div className="glass-panel mesh-card flex w-full max-w-full flex-col gap-4 rounded-2xl px-4 py-4 shadow-[0_28px_90px_rgba(2,6,23,0.28)] sm:px-5">
+      <div className="glass-panel mesh-card flex w-full max-w-full flex-col gap-4 rounded-2xl px-4 py-4 shadow-[0_20px_64px_rgba(2,6,23,0.18)] sm:px-5">
         <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Button
@@ -60,15 +60,15 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
               <Menu className="h-5 w-5" />
             </Button>
             <div className="min-w-0">
-              <div className="text-xs uppercase tracking-[0.32em] text-cyan-100/65">
-                VampForge Workspace
+              <div className="text-xs uppercase tracking-[0.24em] text-primary/80">
+                Workspace
               </div>
               <div className="mt-1 truncate text-2xl font-semibold tracking-[-0.04em] text-white">
                 {currentPage?.title ?? "Workspace"}
               </div>
-              <div className="mt-2 hidden max-w-xl break-words text-sm text-muted-foreground md:block">
+              <div className="mt-1 hidden max-w-lg break-words text-sm text-muted-foreground md:block">
                 {currentPage?.description ??
-                  "Create, refine, and export your developer identity."}
+                  "Build, refine, and export."}
               </div>
             </div>
           </div>
@@ -92,7 +92,7 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
                         handleSearch();
                       }
                     }}
-                    placeholder="Search pages, tools, and workspace actions..."
+                    placeholder="Search workspace..."
                     className="field-surface h-12 w-full rounded-2xl pl-11 pr-4 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary/55 focus:bg-white/[0.06] focus:ring-2 focus:ring-primary/15"
                   />
                 </div>
@@ -103,10 +103,10 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
               <div className="action-cluster sm:w-auto">
                 <Button variant="secondary" onClick={handleSearch} className="shrink-0">
                   <Search className="h-4 w-4" />
-                  Search
+                  Go
                 </Button>
                 <div className="app-readable-chip hidden rounded-full border border-white/10 bg-slate-950/60 px-2.5 py-1 text-[10px] uppercase tracking-[0.26em] text-slate-400 sm:block">
-                  Quick Find
+                  Quick
                 </div>
               </div>
             </div>
@@ -138,16 +138,16 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
               </Button>
               <div className="app-readable-chip hidden rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-2 text-sm text-slate-300 xl:flex xl:items-center xl:gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Premium builder mode
+                Premium mode
               </div>
               <div className="app-profile-pill flex min-w-0 items-center gap-3 rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.82),rgba(10,18,35,0.7))] px-3 py-2.5">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#5eead4,#a5b4fc)] text-sm font-semibold text-slate-950 shadow-[0_14px_34px_rgba(20,184,166,0.16)]">
-                  VF
+                  JM
                 </div>
                 <div className="hidden min-w-0 sm:block">
                   <div className="truncate text-sm font-semibold text-white">Janmejoy</div>
                   <div className="truncate text-xs text-muted-foreground">
-                    Full-Stack Developer
+                    Web Developer
                   </div>
                 </div>
               </div>

@@ -78,7 +78,7 @@ export function DeploymentHistory({ history }: DeploymentHistoryProps) {
 
         <div className="mt-4 flex items-center justify-end gap-2 text-xs text-muted-foreground">
           <MoreHorizontal className="h-3.5 w-3.5" />
-          Frontend-only mock GitHub publish history
+          Local package history
         </div>
       </CardContent>
     </Card>

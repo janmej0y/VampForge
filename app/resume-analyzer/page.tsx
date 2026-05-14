@@ -17,8 +17,7 @@ import { type AnalysisData, type UploadedResumeFile } from "./components/types";
 const mockAnalysisData: AnalysisData = {
   score: 82,
   scoreLabel: "Good",
-  scoreSummary:
-    "Strong technical foundation with solid formatting, but there is still room to improve measurable impact and recruiter-focused positioning.",
+  scoreSummary: "Strong structure. Add clearer metrics and role targeting.",
   strengths: [
     "Strong technical skills section with modern developer keywords.",
     "Good project descriptions that clearly communicate ownership.",
@@ -105,8 +104,8 @@ export default function ResumeAnalyzerPage() {
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       <PageHeader
         badge="Resume Analyzer"
-        title="Resume Analyzer"
-        description="Analyze Your Resume with AI Insights through a frontend-only recruiter dashboard with simulated scoring, ATS checks, and optimization guidance."
+        title="Analyze your resume"
+        description="Review score, ATS fit, strengths, and gaps."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="success" className="gap-2">
@@ -115,7 +114,7 @@ export default function ResumeAnalyzerPage() {
             </Badge>
             <Badge variant="secondary" className="gap-2">
               <Sparkles className="h-3.5 w-3.5" />
-              Mock AI Analysis
+              Local Analysis
             </Badge>
           </div>
         }
@@ -128,7 +127,7 @@ export default function ResumeAnalyzerPage() {
               <p className="text-sm text-muted-foreground">Supported Uploads</p>
               <p className="mt-2 text-3xl font-semibold text-white">PDF / DOCX</p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Drop a resume and simulate instant recruiter analysis.
+                Upload a resume.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/10 p-4">
@@ -145,7 +144,7 @@ export default function ResumeAnalyzerPage() {
                 {isAnalyzing ? "Live" : analysisData ? "Done" : "Idle"}
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Simulated AI response with a 2-second loading state.
+                Fast review state.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4">
@@ -162,7 +161,7 @@ export default function ResumeAnalyzerPage() {
                 {analysisData ? `${analysisData.score}/100` : "--/100"}
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Includes score, strengths, weaknesses, skills, and ATS data.
+                Score and ATS data.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
@@ -191,7 +190,7 @@ export default function ResumeAnalyzerPage() {
                   Analyzing Resume...
                 </div>
                 <div className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                  Simulating AI insights, recruiter review signals, ATS parsing checks, and keyword matching.
+                  Reading structure and keywords.
                 </div>
               </CardContent>
             </Card>
@@ -225,7 +224,7 @@ export default function ResumeAnalyzerPage() {
                   Results Dashboard
                 </div>
                 <div className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                  Upload a resume and click Analyze Resume to reveal your score, strengths, weaknesses, suggestions, detected skills, and ATS compatibility.
+                  Upload a file to see results.
                 </div>
               </CardContent>
             </Card>

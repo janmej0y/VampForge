@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Eye, FileText, Maximize2, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -683,7 +684,20 @@ function ResumeCanvas({ data }: { data: ResumeData }) {
         </Badge>
       </div>
 
-      <div className="w-full max-w-full overflow-auto rounded-2xl border border-white/10 bg-[#dbe4f0]/20 p-3 sm:p-5">
+      <div className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(15,23,42,0.48))] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+            <span className="ml-2 text-xs font-medium text-slate-300">A4 preview</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <Maximize2 className="h-3.5 w-3.5" />
+            Auto-fit
+          </div>
+        </div>
+      <div className="w-full max-w-full overflow-auto bg-[#dbe4f0]/20 p-3 sm:p-5">
         <div
           className="relative mx-auto"
           style={{
@@ -709,6 +723,7 @@ function ResumeCanvas({ data }: { data: ResumeData }) {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -721,9 +736,9 @@ export function ResumePreview({ data, actions }: ResumePreviewProps) {
       <CardHeader className="border-b border-white/10">
         <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <CardTitle className="text-white">Resume Live Preview</CardTitle>
+            <CardTitle className="text-white">Resume Preview</CardTitle>
             <CardDescription>
-              Single-column ATS-safe preview with automatic page fitting and recruiter-focused content formatting.
+              ATS-safe A4 preview with automatic page fit.
             </CardDescription>
           </div>
           <div className="flex min-w-0 flex-wrap gap-2">
@@ -750,6 +765,28 @@ export function ResumePreview({ data, actions }: ResumePreviewProps) {
             {actions}
           </div>
         ) : null}
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            { label: "Template", value: templateStyles[data.template].label, icon: Sparkles },
+            { label: "Layout", value: "Single column", icon: FileText },
+            { label: "Preview", value: "Live fit", icon: Eye },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3"
+              >
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <Icon className="h-3.5 w-3.5 text-primary" />
+                  {item.label}
+                </div>
+                <div className="mt-2 text-sm font-semibold text-white">{item.value}</div>
+              </div>
+            );
+          })}
+        </div>
         <ResumeCanvas data={data} />
       </CardContent>
     </Card>

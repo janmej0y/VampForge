@@ -27,16 +27,16 @@ export function PortfolioPreview({
       <CardHeader className="border-b border-sky-100 bg-[linear-gradient(135deg,rgba(240,249,255,0.96),rgba(255,255,255,0.9))]">
         <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <CardTitle className="text-slate-950">Portfolio Preview</CardTitle>
+            <CardTitle className="text-slate-950">Preview</CardTitle>
             <CardDescription>
-              Review the portfolio package and repository target before pushing code.
+              Review the package target.
             </CardDescription>
           </div>
           <div className="flex min-w-0 flex-wrap gap-2">
             <Button variant="secondary" asChild>
               <a href={previewUrl} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                Open Repo Target
+                Open Target
               </a>
             </Button>
             <Button variant="outline" asChild>
@@ -52,9 +52,7 @@ export function PortfolioPreview({
       <CardContent className="space-y-6 pt-6">
         <div className="relative w-full max-w-full overflow-hidden rounded-[2rem] border border-sky-200 bg-white shadow-[0_25px_80px_rgba(14,116,144,0.16)]">
           <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:42px_42px] opacity-[0.08]" />
-          <div className="pointer-events-none absolute -left-20 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl" />
-          <div className="pointer-events-none absolute -right-20 top-16 h-64 w-64 rounded-full bg-blue-300/24 blur-3xl" />
-          <div className="relative border-b border-sky-100 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.12),transparent_28%)] px-6 py-8">
+          <div className="relative border-b border-sky-100 bg-[linear-gradient(135deg,rgba(20,184,166,0.12),rgba(255,255,255,0.9),rgba(245,158,11,0.08))] px-6 py-8">
             <div className="mb-5 flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
@@ -72,7 +70,7 @@ export function PortfolioPreview({
                 {portfolioName}
               </div>
               <div className="max-w-xl text-sm leading-7 text-slate-600">
-                A polished portfolio source package with recruiter-friendly content, ready to be pushed to GitHub and deployed anywhere.
+                Portfolio source package ready for handoff.
               </div>
             </div>
           </div>
@@ -98,7 +96,7 @@ export function PortfolioPreview({
                   <div className="min-w-0 truncate text-sm font-semibold text-slate-900">{item}</div>
                 </div>
                 <div className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Polished portfolio content prepared for GitHub handoff.
+                  Prepared for handoff.
                 </div>
               </div>
             ))}

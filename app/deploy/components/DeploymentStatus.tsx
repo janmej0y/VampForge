@@ -46,9 +46,9 @@ export function DeploymentStatus({
       <CardHeader className="border-b border-white/10">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <CardTitle className="text-white">GitHub Publish Status</CardTitle>
+            <CardTitle className="text-white">Publish Status</CardTitle>
             <CardDescription>
-              Follow the GitHub push pipeline with a stepper, progress bar, and final handoff.
+              Track package progress.
             </CardDescription>
           </div>
           <Badge variant={status === "success" ? "success" : "secondary"}>
@@ -75,10 +75,10 @@ export function DeploymentStatus({
               </div>
               <div className="mt-1 text-sm text-slate-400">
                 {status === "deploying"
-                  ? "Preparing the portfolio files, packaging the repo, and simulating a GitHub push."
+                  ? "Packaging portfolio files."
                   : status === "success"
-                    ? "Your portfolio code is ready in GitHub. The user can deploy it on any platform they want."
-                    : "Connect GitHub and push when your settings look right."}
+                    ? "Code package is ready."
+                    : "Connect GitHub to start."}
               </div>
             </div>
 
@@ -139,7 +139,7 @@ export function DeploymentStatus({
                   <div className="text-sm font-semibold text-white">
                     {step.label}
                   </div>
-                  <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                  <div className="mt-1 text-sm leading-5 text-muted-foreground">
                     {step.description}
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export function DeploymentStatus({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-lg font-semibold text-white">
-                  Portfolio Code Pushed
+                  Code Ready
                 </div>
                 <div className="mt-1 text-sm text-emerald-100/90">
                   GitHub Repository
@@ -169,12 +169,12 @@ export function DeploymentStatus({
                   <Button variant="secondary" asChild>
                     <a href={liveUrl} target="_blank" rel="noreferrer">
                       <ExternalLink className="h-4 w-4" />
-                      Open Repo
+                      Open
                     </a>
                   </Button>
                   <Button variant="outline" onClick={onCopyUrl}>
                     <Copy className="h-4 w-4" />
-                    {copied ? "Copied Repo URL" : "Copy Repo URL"}
+                    {copied ? "Copied" : "Copy URL"}
                   </Button>
                   <Button variant="outline" onClick={onRedeploy}>
                     <RotateCcw className="h-4 w-4" />

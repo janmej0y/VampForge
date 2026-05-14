@@ -94,10 +94,10 @@ const personalFields: Array<{
   { key: "fullName", label: "Full Name", placeholder: "Janmejoy Mahato" },
   { key: "title", label: "Professional Title", placeholder: "Senior Full-Stack Engineer" },
   { key: "email", label: "Email", placeholder: "janmejoy@email.com" },
-  { key: "phone", label: "Phone", placeholder: "+91 98765 43210" },
-  { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.dev" },
+  { key: "phone", label: "Phone", placeholder: "+91 7477661933" },
+  { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.is-a.dev" },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/janmejoy" },
-  { key: "github", label: "GitHub", placeholder: "https://github.com/janmejoy" },
+  { key: "github", label: "GitHub", placeholder: "https://github.com/janmej0y" },
 ];
 
 const backgroundThemes: Array<{ value: ResumeBackgroundTheme; label: string }> = [
@@ -139,7 +139,7 @@ function FormSection({
           <div>
             <div className="section-label">{step}</div>
             <div className="mt-2 text-lg font-semibold text-white">{title}</div>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            <p className="mt-1 max-w-lg text-sm leading-5 text-muted-foreground">
               {description}
             </p>
           </div>
@@ -280,10 +280,9 @@ export function ResumeForm({
   return (
     <Card className="bg-white/[0.045] fade-in-up">
       <CardHeader className="border-b border-white/10">
-        <CardTitle className="text-white">ATS Resume Builder</CardTitle>
+        <CardTitle className="text-white">Resume Builder</CardTitle>
         <CardDescription>
-          Build a recruiter-approved resume with stronger content rules, clean
-          single-column output, and export-ready ATS structure.
+          Build an ATS-safe resume with live preview.
         </CardDescription>
       </CardHeader>
 
@@ -292,7 +291,7 @@ export function ResumeForm({
           icon={FileUser}
           step="Step 01"
           title="Identity, Links, and Page Control"
-          description="Set the exact header details recruiters expect and control the maximum number of resume pages."
+          description="Set contact details and page count."
         >
           <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
@@ -316,13 +315,13 @@ export function ResumeForm({
               <ToggleCard
                 checked={data.atsMode}
                 label="ATS Friendly Mode"
-                description="Keeps the resume locked to a clean single-column structure with standard formatting and recruiter-safe spacing."
+                description="Use standard recruiter-safe formatting."
                 onChange={onToggleAtsMode}
               />
               <ToggleCard
                 checked={data.backgroundEnabled}
                 label="Premium Background Design"
-                description="Adds subtle ATS-safe background structure with light gradients, dividers, and template-specific polish."
+                description="Add subtle export-safe polish."
                 onChange={onToggleBackground}
               />
             </div>
@@ -478,7 +477,7 @@ export function ResumeForm({
           icon={Sparkles}
           step="Step 02"
           title="Professional Summary and Skills"
-          description="Generate a sharper role-specific summary and organize skills into ATS-friendly categories."
+          description="Write summary and skills."
           action={
             <Button type="button" variant="secondary" onClick={onGenerateSummary}>
               <WandSparkles className="h-4 w-4" />
@@ -540,7 +539,7 @@ export function ResumeForm({
           icon={BriefcaseBusiness}
           step="Step 03"
           title="Work Experience"
-          description="Use 3-5 bullets per role with action verb + task + tech + result."
+          description="Add roles and impact bullets."
           action={
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="secondary" onClick={onEnhanceExperience}>
@@ -571,7 +570,7 @@ export function ResumeForm({
           icon={FileText}
           step="Step 04"
           title="Projects"
-          description="Show at least two projects with GitHub or live links and stronger impact-focused bullets."
+          description="Add projects and links."
           action={
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="secondary" onClick={onEnhanceProjects}>
@@ -605,7 +604,7 @@ export function ResumeForm({
           icon={GraduationCap}
           step="Step 05"
           title="Education"
-          description="Add degree, institution, year, and optional supporting bullets like CGPA or coursework."
+          description="Add degree and school."
           action={
             <Button type="button" variant="secondary" onClick={onAddEducation}>
               <Plus className="h-4 w-4" />
@@ -630,7 +629,7 @@ export function ResumeForm({
           icon={Award}
           step="Step 06"
           title="Certifications"
-          description="Add optional certifications that strengthen recruiter confidence without cluttering the resume."
+          description="Add certificates and wins."
         >
           <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4">
             <div className="mb-3 flex items-center gap-3">
@@ -646,7 +645,7 @@ export function ResumeForm({
             </div>
             <TagInput
               label="Certification Tags"
-              placeholder="AWS Certified Developer"
+              placeholder="Cybersecurity Virtual Internship"
               value={data.certifications}
               onChange={onCertificationsChange}
             />

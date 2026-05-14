@@ -19,8 +19,8 @@ const previews = [
     icon: FileText,
     eyebrow: "ATS Score",
     score: "96",
-    title: "Senior Frontend Engineer",
-    description: "Clean single-column resume with keyword matching, export controls, and recruiter-safe hierarchy.",
+    title: "Web Developer",
+    description: "Clean one-page profile with project proof, skills, education, and recruiter-safe structure.",
   },
   {
     id: "portfolio",
@@ -73,11 +73,11 @@ function ResumeDemo() {
         <div className="border-b border-slate-200 pb-4">
           <div className="text-2xl font-bold tracking-[-0.04em]">Janmejoy Mahato</div>
           <div className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Frontend Developer
+            Web Developer
           </div>
         </div>
         <div className="space-y-5 pt-5">
-          {["Professional Summary", "Core Skills", "Experience"].map((title, index) => (
+          {["Professional Summary", "Core Skills", "Projects"].map((title, index) => (
             <div key={title}>
               <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-900">
                 {title}
@@ -103,11 +103,11 @@ function PortfolioDemo() {
           Portfolio Preview
         </div>
         <div className="mt-5 text-4xl font-semibold tracking-[-0.05em] text-white">
-          Developer work, framed with proof.
+          Full-stack projects, framed with proof.
         </div>
       </div>
       <div className="grid gap-4 p-5 md:grid-cols-3">
-        {["Project Impact", "Tech Stack", "Launch Links"].map((item, index) => (
+        {["Voting App", "RentHub", "AI Chatbot"].map((item, index) => (
           <motion.div
             key={item}
             className="rounded-[1.4rem] border border-white/10 bg-white/[0.055] p-4"

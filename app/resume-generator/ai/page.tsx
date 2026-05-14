@@ -158,25 +158,51 @@ const emptyResumeData: ResumeData = {
 const initialForm: AiResumeForm = {
   apiKey: "",
   model: "gemini-2.5-flash",
-  fullName: "",
-  title: "",
-  email: "",
-  phone: "",
-  location: "",
-  website: "",
-  linkedin: "",
-  github: "",
-  targetRole: "",
+  fullName: "Janmejoy Mahato",
+  title: "Web Developer",
+  email: "janmejoymahato529@gmail.com",
+  phone: "+91 7477661933",
+  location: "Kolkata, India",
+  website: "https://janmejoy.is-a.dev",
+  linkedin: "https://linkedin.com/in/janmejoy",
+  github: "https://github.com/janmej0y",
+  targetRole: "Full Stack Web Developer",
   targetCompany: "",
-  targetIndustry: "",
+  targetIndustry: "Web Development",
   tone: "Professional",
-  experienceLevel: "Mid-level",
+  experienceLevel: "Entry-level",
   jobDescription: "",
-  background: "",
-  skills: [],
-  education: "",
-  projects: "",
-  certifications: [],
+  background:
+    "Final-year B.Tech CSE student with hands-on experience in full-stack web development, authentication, databases, dashboards, AI integrations, and deployment-ready web applications.",
+  skills: [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "React",
+    "Next.js",
+    "TypeScript",
+    "Tailwind CSS",
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "MySQL",
+    "Supabase",
+    "Python",
+    "Redis",
+    "Git",
+  ],
+  education:
+    "B.Tech in Computer Science and Engineering, Greater Kolkata College of Engineering & Management, 2022-2026, CGPA 7.20/10. Higher Secondary - WBCHSE, 85.60%. Secondary - WBBSE, 69.70%.",
+  projects:
+    "Online Voting System: full-stack voting app with Node.js, Express, SQLite, JWT, bcrypt, Tailwind CSS, single-vote validation, and real-time results. RentHub: rental platform using Next.js, TypeScript, Tailwind CSS, and Supabase for auth, storage, and listing management. Kurmi Chatbot: AI chatbot with Next.js, NextAuth, MongoDB, Markdown, and Gemini API.",
+  certifications: [
+    "Cybersecurity Virtual Internship",
+    "Full Stack BCT Training",
+    "Ethical Hacking Internship",
+    "Cloud Security",
+    "Java Full Stack",
+    "Cloud Foundation",
+  ],
   template: "professional",
   pageCount: 1,
   strictOnePage: true,
@@ -302,11 +328,11 @@ const personalFields: Array<{
   { key: "fullName", label: "Full Name", placeholder: "Janmejoy Mahato" },
   { key: "title", label: "Current Title", placeholder: "Frontend Developer" },
   { key: "email", label: "Email", placeholder: "janmejoy@email.com" },
-  { key: "phone", label: "Phone", placeholder: "+91 98765 43210" },
-  { key: "location", label: "Location", placeholder: "Bengaluru, India" },
-  { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.dev" },
+  { key: "phone", label: "Phone", placeholder: "+91 7477661933" },
+  { key: "location", label: "Location", placeholder: "Kolkata, India" },
+  { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.is-a.dev" },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/janmejoy" },
-  { key: "github", label: "GitHub", placeholder: "https://github.com/janmejoy" },
+  { key: "github", label: "GitHub", placeholder: "https://github.com/janmej0y" },
 ];
 
 function FormSection({
@@ -1101,8 +1127,8 @@ export default function AiResumeGeneratorPage() {
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       <PageHeader
         badge="AI Resume Generator"
-        title="Build a complete resume from your details using your Gemini key"
-        description="Add your profile, target role, background notes, and preferred template. The user adds their own Gemini key only when using AI drafting, while VampForge keeps the preview and exports ATS-safe."
+        title="AI resume builder"
+        description="Draft with Gemini, then preview and export."
         action={
           <div className="flex flex-col gap-3 lg:items-end">
             <div className="flex flex-wrap items-center gap-2">
@@ -1209,7 +1235,7 @@ export default function AiResumeGeneratorPage() {
                   icon={KeyRound}
                   step="Step 01"
                   title="Profile and Gemini Access"
-                  description="Add your own Gemini key only if you want AI drafting, then fill recruiter-visible header details and an optional resume photo."
+                  description="Add your Gemini key and header details."
                 >
                   <div className="space-y-5">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -1277,7 +1303,7 @@ export default function AiResumeGeneratorPage() {
                           <ToggleCard
                             checked={form.includePhoto}
                             label="Show photo in header"
-                            description="Keeps the profile image on the right side of the resume header in preview and exports."
+                            description="Show photo in preview and exports."
                             onChange={(value) => updateForm("includePhoto", value)}
                           />
                           <UploadMeter status={photoUpload} />
@@ -1327,7 +1353,7 @@ export default function AiResumeGeneratorPage() {
                   icon={Target}
                   step="Step 02"
                   title="Targeting and AI Direction"
-                  description="Tell Gemini what role, company, tone, and resume structure to optimize for."
+                  description="Set role, company, tone, and template."
                 >
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
@@ -1481,7 +1507,7 @@ export default function AiResumeGeneratorPage() {
                   icon={Bot}
                   step="Step 03"
                   title="Source Material and Job Match"
-                  description="Give Gemini truthful source material and a target job post for keyword matching."
+                  description="Add background notes and job post."
                 >
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -1524,7 +1550,7 @@ export default function AiResumeGeneratorPage() {
                   icon={Layers3}
                   step="Step 04"
                   title="Supporting Resume Sections"
-                  description="Add education, projects, certifications, and proof points for stronger generation."
+                  description="Add education, projects, and proof."
                 >
                   <div className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -1547,7 +1573,7 @@ export default function AiResumeGeneratorPage() {
                     </div>
                     <TagInput
                       label="Certifications"
-                      placeholder="AWS Certified Developer"
+                      placeholder="Cybersecurity Virtual Internship"
                       value={form.certifications}
                       onChange={(value) => updateForm("certifications", value)}
                     />
@@ -1560,7 +1586,7 @@ export default function AiResumeGeneratorPage() {
                   icon={ClipboardCheck}
                   step="Step 05"
                   title="Review, Improve, and Export"
-                  description="Check ATS fit, missing keywords, weak bullets, and export readiness before downloading."
+                  description="Check ATS fit and export readiness."
                 >
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">

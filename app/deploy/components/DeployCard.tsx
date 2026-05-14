@@ -38,12 +38,12 @@ const environments: Array<{
   {
     id: "production",
     label: "Main",
-    description: "Prepare the repository for the main version you plan to deploy publicly.",
+    description: "Final package.",
   },
   {
     id: "preview",
     label: "Preview",
-    description: "Create a safe preview package before the final GitHub push.",
+    description: "Test package.",
   },
 ];
 
@@ -60,9 +60,9 @@ export function DeployCard({
   return (
     <Card className="bg-white/[0.045]">
       <CardHeader className="border-b border-white/10">
-        <CardTitle className="text-white">GitHub Publish Settings</CardTitle>
+        <CardTitle className="text-white">Publish Settings</CardTitle>
         <CardDescription>
-          Prepare your portfolio code for GitHub. Hosting stays in the user&apos;s control.
+          Prepare portfolio code for GitHub.
         </CardDescription>
       </CardHeader>
 
@@ -71,7 +71,7 @@ export function DeployCard({
           <div>
             <div className="text-sm font-medium text-slate-200">GitHub Connection</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Connect GitHub before pushing portfolio code. VampForge should only publish into the user&apos;s own account.
+              Connect GitHub before pushing code.
             </p>
           </div>
 
@@ -101,12 +101,12 @@ export function DeployCard({
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-slate-950">
-                    {formData.githubConnected ? "GitHub connected" : "Connect your GitHub profile"}
+                    {formData.githubConnected ? "GitHub connected" : "Connect GitHub"}
                   </div>
                   <div className="mt-1 break-words text-xs leading-5 text-slate-600">
                     {formData.githubConnected
-                      ? `Connected as ${formData.githubUsername}. You can push portfolio code when the repository name is ready.`
-                      : "GitHub OAuth is required so the user can push code into a real repository in their own account."}
+                      ? `Connected as ${formData.githubUsername}.`
+                      : "OAuth is required for real repository access."}
                   </div>
                 </div>
               </div>
@@ -129,7 +129,7 @@ export function DeployCard({
           <div>
             <div className="text-sm font-medium text-slate-200">Publish Mode</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Choose whether you want a final push target or a preview-style package run.
+              Choose final or preview.
             </p>
           </div>
 
@@ -177,9 +177,9 @@ export function DeployCard({
 
         <section className="space-y-4">
           <div>
-            <div className="text-sm font-medium text-slate-200">Repository Settings</div>
+            <div className="text-sm font-medium text-slate-200">Repository</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Set the repository details here. The user can deploy the pushed code on any hosting platform later.
+              Set the target details.
             </p>
           </div>
 
@@ -220,7 +220,7 @@ export function DeployCard({
                   <Input
                     className="pl-10"
                     value={formData.customDomain}
-                    placeholder="portfolio.janmejoy.dev"
+                    placeholder="janmejoy.is-a.dev"
                     onChange={(event) =>
                       onFieldChange("customDomain", event.target.value)
                     }

@@ -5,7 +5,7 @@ import { BrainCircuit, Building2, Gauge, History, Mic, Sparkles } from "lucide-r
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { getQuestionTimeLimit } from "./components/question-bank";
+import { buildInterviewQuestions, getQuestionTimeLimit } from "./components/question-bank";
 import { CompanyInterviewSetup } from "./components/CompanyInterviewSetup";
 import { enrichEvaluationWithSpeech } from "./components/EvaluationEngine";
 import { FeedbackScreen } from "./components/FeedbackScreen";
@@ -30,6 +30,7 @@ import {
   createInterviewSummary,
   LIVE_INTERVIEW_HISTORY_KEY,
   LIVE_INTERVIEW_SESSION_KEY,
+  getPerformanceLevel,
 } from "@/lib/live-interview";
 
 const defaultSetup: InterviewSetupState = {
@@ -74,6 +75,78 @@ function toConversationHistory(session: InterviewSessionState) {
     answer: answer.submittedAnswer,
     score: answer.evaluation.score,
   }));
+}
+
+function getTrackFromCompanyType(
+  type: InterviewSetupState["companyInterviewType"]
+): InterviewSetupState["interviewType"] {
+  if (type === "behavioral") return "hr";
+  if (type === "mixed") return "mixed";
+  return "technical";
+}
+
+function createLocalEvaluation(
+  question: InterviewQuestionInstance,
+  answer: string,
+  setup: InterviewSetupState,
+  speechMetrics?: SpeechMetrics
+): InterviewEvaluation {
+  const normalized = answer.toLowerCase();
+  const matchedKeywords = question.expectedKeywords.filter((keyword) =>
+    normalized.includes(keyword.toLowerCase())
+  );
+  const missingKeywords = question.expectedKeywords.filter(
+    (keyword) => !matchedKeywords.includes(keyword)
+  );
+  const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+  const keywordScore = question.expectedKeywords.length
+    ? (matchedKeywords.length / question.expectedKeywords.length) * 10
+    : 6;
+  const lengthScore = wordCount >= 90 ? 8.2 : wordCount >= 55 ? 7 : wordCount >= 30 ? 5.8 : 4.2;
+  const structureScore = /first|then|because|tradeoff|impact|example|result|approach/i.test(answer)
+    ? 1
+    : 0;
+  const speechScore = speechMetrics?.confidenceScore ?? 6.5;
+  const score = Math.max(
+    1,
+    Math.min(
+      10,
+      Number(((keywordScore * 0.45 + lengthScore * 0.35 + speechScore * 0.2) + structureScore).toFixed(1))
+    )
+  );
+  const performanceLevel = getPerformanceLevel(score);
+  const company = setup.company ? COMPANY_LABELS[setup.company] : "the interviewer";
+
+  return {
+    score,
+    clarity: Number(Math.min(10, lengthScore + structureScore).toFixed(1)),
+    technicalAccuracy: Number(Math.max(3, keywordScore).toFixed(1)),
+    depth: Number(Math.min(10, lengthScore + matchedKeywords.length * 0.3).toFixed(1)),
+    keywordCoverage: Number(keywordScore.toFixed(1)),
+    matchedKeywords,
+    missingKeywords,
+    feedback:
+      score >= 7
+        ? "Good structure. Add one sharper example and a measurable result to make it stronger."
+        : "Your answer needs more structure, specific examples, and clearer tradeoffs.",
+    suggestedImprovement:
+      missingKeywords.length > 0
+        ? `Mention: ${missingKeywords.slice(0, 4).join(", ")}.`
+        : "Add impact, edge cases, and a concise closing decision.",
+    strengths:
+      matchedKeywords.length > 0
+        ? ["Covered relevant concepts", "Answered the question directly"]
+        : ["Started with a relevant response"],
+    weaknesses:
+      score >= 7
+        ? ["Could include more measurable impact"]
+        : ["Needs stronger structure", "Needs more role-specific detail"],
+    missedConcepts: missingKeywords.slice(0, 5),
+    performanceLevel,
+    needsFollowUp: score < 7 && Boolean(question.followUpPrompt),
+    followUpQuestion: score < 7 ? question.followUpPrompt : undefined,
+    companyFeedback: `${company} style: keep the answer concise, specific, and outcome-driven.`,
+  };
 }
 
 export default function LiveInterviewPage() {
@@ -208,11 +281,6 @@ export default function LiveInterviewPage() {
   }, []);
 
   const beginInterview = async (nextSetup = setup) => {
-    if (!geminiApiKey.trim()) {
-      setStartError("Add your own Gemini API key in settings or paste it here first.");
-      return;
-    }
-
     if (!mediaStream) {
       setStartError("Allow camera and microphone access before starting.");
       return;
@@ -223,6 +291,7 @@ export default function LiveInterviewPage() {
       mode: "company",
       company: nextSetup.company ?? "google",
       companyInterviewType: nextSetup.companyInterviewType ?? "mixed",
+      interviewType: getTrackFromCompanyType(nextSetup.companyInterviewType ?? "mixed"),
       strictMode: true,
       voiceMode: true,
     };
@@ -234,6 +303,24 @@ export default function LiveInterviewPage() {
     setCurrentEvaluation(null);
 
     try {
+      if (!geminiApiKey.trim()) {
+        const localQuestions = buildInterviewQuestions(companySetup).slice(0, totalQuestions);
+        const now = new Date().toISOString();
+
+        setSession({
+          id: createSessionId(),
+          setup: companySetup,
+          questions: localQuestions,
+          currentQuestionIndex: 0,
+          answers: [],
+          startedAt: now,
+          lastUpdatedAt: now,
+          questionTimeLimit: getQuestionTimeLimit(companySetup, totalQuestions),
+          completed: false,
+        });
+        return;
+      }
+
       const firstQuestion = await generateCompanyQuestion({
         setup: companySetup,
         geminiApiKey: geminiApiKey.trim(),
@@ -255,7 +342,7 @@ export default function LiveInterviewPage() {
         completed: false,
       });
     } catch {
-      setStartError("Gemini could not prepare the company interview. Check your key and try again.");
+      setStartError("Interview could not start. Check setup and try again.");
     } finally {
       setIsGeneratingQuestion(false);
     }
@@ -330,6 +417,18 @@ export default function LiveInterviewPage() {
 
     setIsGeneratingQuestion(true);
     try {
+      if (!geminiApiKey.trim()) {
+        setSession((previous) => {
+          if (!previous || previous.completed) return previous;
+          return {
+            ...previous,
+            currentQuestionIndex: previous.currentQuestionIndex + 1,
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        return;
+      }
+
       const nextQuestion = await generateCompanyQuestion({
         setup: session.setup,
         geminiApiKey: geminiApiKey.trim(),
@@ -348,9 +447,7 @@ export default function LiveInterviewPage() {
           };
         });
     } catch {
-      setEvaluationError(
-        "Gemini could not generate the next question. Try again or submit the interview."
-      );
+      setEvaluationError("Could not prepare the next question. Try again or submit the interview.");
     } finally {
       setIsGeneratingQuestion(false);
     }
@@ -366,28 +463,27 @@ export default function LiveInterviewPage() {
       return;
     }
 
-    if (!geminiApiKey.trim()) {
-      setEvaluationError("Add your own Gemini API key before submitting an answer.");
-      return;
-    }
-
     setIsEvaluating(true);
     setEvaluationError(null);
 
     let evaluation: InterviewEvaluation | null = null;
 
-    try {
-      evaluation = await evaluateCompanyAnswer({
-        question: currentQuestion,
-        answer,
-        geminiApiKey: geminiApiKey.trim(),
-        setup: session.setup,
-        speechMetrics,
-      });
-    } catch {
-      setEvaluationError(
-        "Gemini could not evaluate this answer. Check your API key and try again."
-      );
+    if (!geminiApiKey.trim()) {
+      evaluation = createLocalEvaluation(currentQuestion, answer, session.setup, speechMetrics);
+    } else {
+      try {
+        evaluation = await evaluateCompanyAnswer({
+          question: currentQuestion,
+          answer,
+          geminiApiKey: geminiApiKey.trim(),
+          setup: session.setup,
+          speechMetrics,
+        });
+      } catch {
+        setEvaluationError(
+          "Gemini could not evaluate this answer. Check your API key and try again."
+        );
+      }
     }
 
     if (!evaluation) {
@@ -474,13 +570,13 @@ export default function LiveInterviewPage() {
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       <PageHeader
         badge="Live Interview"
-        title="Real Company Interview Mode"
-        description={`Practice a voice and camera interview in the style of ${companyLabel}. The user adds their own Gemini API key only when they want AI-generated interview questions and feedback.`}
+        title="Live interview practice"
+        description={`Practice ${companyLabel}-style questions with voice and camera.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="success" className="gap-2">
               <Building2 className="h-3.5 w-3.5" />
-              Company Patterns
+               Company Style
             </Badge>
             <Badge variant="secondary" className="gap-2">
               <Mic className="h-3.5 w-3.5" />
@@ -498,10 +594,10 @@ export default function LiveInterviewPage() {
         <Card className="bg-white/[0.045] fade-in-up">
           <CardContent className="flex min-w-0 items-center justify-between gap-4 pt-6">
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Company Mode</p>
+              <p className="text-sm text-muted-foreground">Mode</p>
               <p className="mt-2 text-3xl font-semibold text-white">4 styles</p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Google, Amazon, Microsoft, and Startup interview behavior.
+                  Google, Amazon, Microsoft, Startup.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/15 p-4">

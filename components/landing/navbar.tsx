@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, ShieldCheck, Sparkles, X } from "lucide-react";
 import { BrandLockup } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,10 +36,10 @@ export function LandingNavbar() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
         className={cn(
-          "mx-auto max-w-7xl rounded-[1.5rem] border px-4 py-3 transition duration-300 sm:px-5",
+          "mx-auto max-w-7xl rounded-[1.7rem] border px-4 py-3 transition duration-300 sm:px-5",
           scrolled
-            ? "border-white/10 bg-[#0A0F1C]/78 shadow-[0_18px_70px_rgba(2,8,23,0.42)] backdrop-blur-2xl"
-            : "border-white/10 bg-white/[0.035] backdrop-blur-xl"
+            ? "border-white/12 bg-[#080d18]/82 shadow-[0_22px_80px_rgba(2,8,23,0.46)] backdrop-blur-2xl"
+            : "border-white/10 bg-white/[0.045] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl"
         )}
       >
         <div className="flex items-center justify-between gap-4">
@@ -55,7 +55,7 @@ export function LandingNavbar() {
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-full px-4 py-2 text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
+                className="rounded-full border border-transparent px-4 py-2 text-sm text-slate-300 transition hover:border-white/10 hover:bg-white/[0.06] hover:text-white"
               >
                 {item.label}
               </a>
@@ -63,15 +63,16 @@ export function LandingNavbar() {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
+            <div className="flex items-center gap-2 rounded-full border border-teal-300/15 bg-teal-300/10 px-3 py-2 text-xs font-semibold text-teal-100">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Firebase-ready
+            </div>
             <Button asChild variant="secondary">
               <Link href="/login">Login</Link>
             </Button>
-            <Button asChild variant="secondary">
-              <Link href="/live-interview">Live Interview</Link>
-            </Button>
             <Button asChild>
               <Link href="/dashboard">
-                Dashboard
+                Launch App
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -104,10 +105,14 @@ export function LandingNavbar() {
             </Button>
             <Button asChild className="w-full">
               <Link href="/dashboard">
-                Dashboard
+                Launch App
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-teal-300/15 bg-teal-300/10 px-4 py-3 text-xs font-semibold text-teal-100">
+              <Sparkles className="h-3.5 w-3.5" />
+              Premium workspace
+            </div>
           </div>
         ) : null}
       </motion.div>

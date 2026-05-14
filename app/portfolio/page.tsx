@@ -54,110 +54,135 @@ const idleUploadStatus: UploadStatus = {
 const initialPortfolioData: PortfolioData = {
   template: "nova",
   name: "Janmejoy Mahato",
-  title: "Full Stack Developer",
+  title: "Web Developer",
   summary:
-    "Full Stack Developer crafting polished digital products with a strong focus on frontend experience, scalable systems, and premium UI execution. Builds high-trust web apps with product clarity, performance, and memorable design in mind.",
+    "Final-year B.Tech CSE student building full-stack web apps with React, Next.js, Node.js, Express, Supabase, MongoDB, and clean product-focused UI.",
   about:
-    "I design developer-first products with a bias for clarity, speed, and memorable interfaces. My favorite builds sit at the intersection of elegant frontend systems, AI-powered workflows, and launch-ready product thinking.",
+    "I build practical web products with authentication, databases, dashboards, AI features, and polished frontend flows. I care about clear UX, secure code, and shipping projects that feel complete.",
   experienceSummary:
-    "4+ years building polished product experiences for SaaS tools, creator platforms, and developer-facing workflows with strong collaboration across design, product, and engineering.",
+    "Hands-on project experience across voting systems, rental platforms, AI chatbots, portfolio websites, and Python automation.",
   careerGoals:
-    "I want to keep building product-minded systems where frontend quality, business impact, and thoughtful execution all matter equally.",
+    "I want to grow as a product-minded full-stack developer and contribute to agile teams that build secure, scalable applications.",
   techFocus:
-    "My current focus is Next.js, TypeScript, design systems, AI-assisted workflows, modern backend integrations, and premium landing-page execution.",
-  clientCount: "12+",
+    "Currently focused on Next.js, TypeScript, Firebase, Supabase, MongoDB, secure authentication, AI-assisted products, and premium portfolio systems.",
+  clientCount: "5+",
   skills: [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "React",
     "Next.js",
     "TypeScript",
     "Tailwind CSS",
     "Node.js",
-    "PostgreSQL",
-    "OpenAI API",
-    "Framer Motion",
-    "AWS",
+    "Express.js",
+    "MongoDB",
+    "MySQL",
+    "Supabase",
+    "Python",
+    "Redis",
+    "Git",
   ],
   projects: [
     {
       ...createProject(),
-      name: "SignalStack",
+      name: "Online Voting System",
       description:
-        "A release intelligence dashboard that turns product telemetry and user feedback into clear launch recommendations for engineering teams.",
-      techStack: ["Next.js", "TypeScript", "Prisma", "PostgreSQL"],
-      githubLink: "https://github.com/janmejoy/signalstack",
-      liveLink: "https://signalstack.app",
+        "Full-stack voting app with secure authentication, single-vote validation, real-time result flow, and a clean voter experience.",
+      techStack: ["Node.js", "Express", "SQLite", "JWT", "bcrypt", "Tailwind CSS"],
+      githubLink: "https://github.com/janmej0y/Online-Voting-System",
+      liveLink: "https://online-voting-system-henna.vercel.app",
       imageUrl:
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
     },
     {
       ...createProject(),
-      name: "ForgeFlow",
+      name: "RentHub",
       description:
-        "A collaborative workflow builder for creators and developers with polished onboarding, automation triggers, and a sleek project command center.",
-      techStack: ["React", "Tailwind CSS", "Framer Motion", "Supabase"],
-      githubLink: "https://github.com/janmejoy/forgeflow",
-      liveLink: "https://forgeflow.dev",
+        "Rental platform built with Next.js, TypeScript, Tailwind CSS, and Supabase for authentication, storage, and listing management.",
+      techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase"],
+      githubLink: "https://github.com/janmej0y/RentHub",
+      liveLink: "https://rent-hub-two.vercel.app",
       imageUrl:
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      ...createProject(),
+      name: "Kurmi Chatbot",
+      description:
+        "AI chatbot built with Next.js, NextAuth, MongoDB, Markdown support, and Gemini API integration with secure authentication.",
+      techStack: ["Next.js", "MongoDB", "NextAuth", "Gemini API", "Markdown"],
+      githubLink: "https://github.com/janmej0y/Baklol-Chatbot",
+      liveLink: "https://baklol-chatbot.vercel.app",
+      imageUrl:
+        "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
     },
   ],
   experience: [
     {
       ...createExperienceItem(),
-      company: "Forge Labs",
-      role: "Senior Full Stack Developer",
+      company: "Personal and Academic Projects",
+      role: "Full Stack Web Developer",
       duration: "2023 - Present",
       description:
-        "Led frontend architecture for a developer workflow platform.\nImproved onboarding clarity and product velocity across multiple release cycles.\nBuilt reusable UI systems that accelerated feature delivery.",
+        "Built full-stack applications with authentication, dashboards, databases, and deployment workflows.\nWorked with React, Next.js, Node.js, Express, Supabase, MongoDB, and Firebase-ready architecture.\nPracticed secure coding, data structures, and clean product presentation.",
     },
     {
       ...createExperienceItem(),
-      company: "Signal Works",
-      role: "Product Engineer",
-      duration: "2021 - 2023",
+      company: "Self-Learning and Training",
+      role: "Web Development Trainee",
+      duration: "2022 - Present",
       description:
-        "Built analytics-heavy product surfaces for internal SaaS tooling.\nCollaborated with design and product to launch clearer data workflows and admin experiences.",
+        "Completed training across full-stack development, cybersecurity, cloud foundations, and ethical hacking.\nBuilt projects independently while improving problem-solving, Git workflow, and deployment skills.",
     },
   ],
   education: [
     {
       ...createEducationItem(),
-      institution: "Tech University",
-      degree: "B.Tech in Computer Science",
-      year: "2021",
-      grade: "8.9 CGPA",
+      institution: "Greater Kolkata College of Engineering & Management",
+      degree: "B.Tech in Computer Science and Engineering",
+      year: "2022 - 2026",
+      grade: "CGPA: 7.20/10",
+    },
+    {
+      ...createEducationItem(),
+      institution: "R.B.B. High (H.S) School",
+      degree: "Higher Secondary - WBCHSE",
+      year: "2021 - 2022",
+      grade: "85.60%",
     },
   ],
   achievements: [
     {
       ...createAchievementItem(),
-      title: "AWS Certified Developer",
+      title: "Cybersecurity Virtual Internship",
       category: "Certification",
-      description: "Validated cloud engineering fundamentals and production-ready delivery practices.",
+      description: "Completed cybersecurity-focused virtual internship training.",
     },
     {
       ...createAchievementItem(),
-      title: "1st Place, DevBuild Hackathon",
-      category: "Hackathon",
-      description: "Built and launched a product prototype that stood out for execution quality and clarity.",
+      title: "Java Full Stack",
+      category: "Certification",
+      description: "Completed Java full-stack training with backend and application fundamentals.",
     },
     {
       ...createAchievementItem(),
-      title: "20k+ Product Users Reached",
-      category: "Growth",
-      description: "Contributed to launches and UX improvements that helped products scale to a larger user base.",
+      title: "Cloud Foundation",
+      category: "Certification",
+      description: "Completed foundational cloud training for modern application delivery.",
     },
   ],
   socialLinks: {
-    github: "https://github.com/janmejoy",
+    github: "https://github.com/janmej0y",
     linkedin: "https://linkedin.com/in/janmejoy",
-    twitter: "https://twitter.com/janmejoy",
+    twitter: "",
   },
   contact: {
-    email: "janmejoy@vampforge.dev",
-    phone: "+91 98765 43210",
-    location: "Bengaluru, India",
-    website: "https://janmejoy.dev",
-    resumeLink: "https://janmejoy.dev/resume.pdf",
+    email: "janmejoymahato529@gmail.com",
+    phone: "+91 7477661933",
+    location: "Kolkata, India",
+    website: "https://janmejoy.is-a.dev",
+    resumeLink: "https://janmejoy.is-a.dev",
   },
   profileImage: null,
   profileImagePosition: 18,
@@ -528,12 +553,10 @@ export default function PortfolioPage() {
                   </Badge>
                   <div className="space-y-3">
                     <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                      Want a custom portfolio built for you?
+                      Want a custom portfolio?
                     </h2>
                     <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-                      If you want a fully custom premium portfolio for your personal brand,
-                      startup profile, or job hunt, contact Janmejoy directly for a tailored
-                      portfolio build.
+                      Contact Janmejoy for a tailored premium portfolio build.
                     </p>
                   </div>
                 </div>
@@ -608,14 +631,14 @@ export default function PortfolioPage() {
 
       <PageHeader
         badge="Portfolio Builder"
-        title="Build a premium, animated developer portfolio that feels recruiter-ready"
-        description="Turn your portfolio into a polished startup-style landing page with sticky navigation, modern sections, smooth motion, richer content blocks, and a stronger recruiter-first layout."
+        title="Build a premium developer portfolio"
+        description="Edit, preview, and export a polished portfolio."
         action={
           <div className="flex min-w-0 flex-col gap-3 lg:items-end">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="success" className="gap-2">
                 <Eye className="h-3.5 w-3.5" />
-                Live SaaS Preview
+                Live Preview
               </Badge>
               <Badge variant="secondary" className="gap-2">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -635,7 +658,7 @@ export default function PortfolioPage() {
                 }}
               >
                 <WandSparkles className="h-4 w-4" />
-                Generate Portfolio
+                Preview
               </Button>
               <Button
                 onClick={() => {
@@ -644,7 +667,7 @@ export default function PortfolioPage() {
                 }}
               >
                 <Download className="h-4 w-4" />
-                Download Portfolio
+                Download
               </Button>
               <Button
                 variant="secondary"
@@ -660,7 +683,7 @@ export default function PortfolioPage() {
                 }}
               >
                 <Download className="h-4 w-4" />
-                {isExportingCode ? "Preparing Code ZIP..." : "Download Code ZIP"}
+                {isExportingCode ? "Preparing..." : "Code ZIP"}
               </Button>
             </div>
           </div>
@@ -674,7 +697,7 @@ export default function PortfolioPage() {
               <p className="text-sm text-muted-foreground">Portfolio Completion</p>
               <p className="mt-2 text-3xl font-semibold text-white">{completion}%</p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Home, about, skills, projects, experience, and contact are all tracked.
+                Core sections tracked.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/15 p-4">
@@ -691,7 +714,7 @@ export default function PortfolioPage() {
                 {highlightedProjects}
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Premium case-study cards with images, hover motion, and links.
+                Case studies with links.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4">
@@ -708,7 +731,7 @@ export default function PortfolioPage() {
                 {liveLinks}/4
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                Recruiters can jump to your resume, GitHub, LinkedIn, and website.
+                Resume, GitHub, LinkedIn, site.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">

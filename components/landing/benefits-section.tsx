@@ -14,7 +14,7 @@ const benefits = [
   {
     icon: BrainCircuit,
     title: "AI Insights",
-    description: "Surface resume strengths, weaknesses, and ATS opportunities with mock intelligence.",
+    description: "Surface resume strengths, weaknesses, and ATS opportunities with local intelligence.",
   },
   {
     icon: Rocket,

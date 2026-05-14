@@ -26,29 +26,25 @@ const templates: Array<{
   {
     id: "modern",
     name: "Modern ATS",
-    description:
-      "Modern ATS resume with a subtle gradient paper, left accent rail, and sharper section rhythm.",
+    description: "Sharp, modern structure.",
     accent: "from-slate-900 via-slate-700 to-slate-300",
   },
   {
     id: "minimal",
     name: "Minimal ATS",
-    description:
-      "Editorial ATS resume with near-white paper, restrained separators, and clean horizontal structure.",
+    description: "Minimal editorial layout.",
     accent: "from-slate-500 via-slate-300 to-white",
   },
   {
     id: "professional",
     name: "Professional ATS",
-    description:
-      "Recruiter-first ATS resume with soft gray paper, subtle boxed sections, and classic corporate structure.",
+    description: "Classic corporate format.",
     accent: "from-slate-950 via-slate-700 to-slate-400",
   },
   {
     id: "executive",
     name: "Executive ATS",
-    description:
-      "Premium executive ATS resume with a header band, faint corner watermark, and leadership-style spacing.",
+    description: "Executive header and spacing.",
     accent: "from-black via-slate-700 to-slate-300",
   },
 ];
@@ -270,14 +266,14 @@ export function TemplateSelector({
       <CardHeader className="border-b border-white/10">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <CardTitle className="text-white">Template Selection</CardTitle>
+            <CardTitle className="text-white">Templates</CardTitle>
             <CardDescription>
-              Choose among four ATS-safe single-column styles. Every option keeps the same recruiter-approved structure.
+              Pick an ATS-safe style.
             </CardDescription>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" />
-            Live template switching
+            Live switching
           </div>
         </div>
       </CardHeader>
@@ -317,7 +313,7 @@ export function TemplateSelector({
                       {template.name}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Single-column live preview
+                      ATS-safe
                     </div>
                   </div>
                 </div>
@@ -329,7 +325,7 @@ export function TemplateSelector({
               </div>
 
               <div className="mt-4 flex flex-1 flex-col">
-                <p className="flex-1 text-sm leading-6 text-muted-foreground">
+                <p className="flex-1 text-sm leading-5 text-muted-foreground">
                   {template.description}
                 </p>
 
@@ -339,7 +335,7 @@ export function TemplateSelector({
                   className="mt-4 w-full"
                   onClick={() => onSelect(template.id)}
                 >
-                  {isSelected ? "Selected" : "Select Template"}
+                  {isSelected ? "Selected" : "Select"}
                 </Button>
               </div>
             </div>

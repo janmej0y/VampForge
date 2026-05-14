@@ -127,7 +127,7 @@ function TemplatePreviewShell({
       <div className="mb-3 flex min-w-0 flex-col justify-between gap-3 px-1 lg:flex-row lg:items-end">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-white">{title}</div>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
         </div>
         <div className="flex min-w-0 flex-wrap gap-2">
           <Badge variant="secondary">{data.template}</Badge>
@@ -135,7 +135,24 @@ function TemplatePreviewShell({
           <Badge variant="secondary">{completion}% complete</Badge>
         </div>
       </div>
-      <CreativeCursor variant={variant}>{children}</CreativeCursor>
+      <div className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(15,23,42,0.48))] shadow-[0_26px_80px_rgba(2,6,23,0.24)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
+            <span className="ml-2 truncate text-xs font-medium text-slate-300">
+              preview.vampforge/{data.template}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+            <span>{portfolioCompletion(data)}% ready</span>
+            <span className="text-white/20">/</span>
+            <span>{data.projects.filter((project) => project.name || project.description).length} projects</span>
+          </div>
+        </div>
+        <CreativeCursor variant={variant}>{children}</CreativeCursor>
+      </div>
     </section>
   );
 }
@@ -157,9 +174,9 @@ function OrbitPortfolioPreview({ data }: { data: PortfolioData }) {
       data={data}
       variant="orbit"
       title="Live Portfolio Preview"
-      description="Orbit Motion template with 3D constellation, floating proof cards, orbital motion, and cinematic case-study visuals."
+      description="Cinematic portfolio preview."
     >
-      <div className="relative max-h-[min(1040px,calc(100vh-7rem))] overflow-auto rounded-2xl bg-[#050713] text-white">
+      <div className="relative max-h-[min(1040px,calc(100vh-7rem))] overflow-auto bg-[#050713] text-white">
         <motion.div
           className="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full border border-cyan-300/20"
           animate={{ rotate: 360 }}
@@ -327,9 +344,9 @@ function TerminalPortfolioPreview({ data }: { data: PortfolioData }) {
       data={data}
       variant="terminal"
       title="Live Portfolio Preview"
-      description="Terminal Neon template with boot sequence, command-line text, scanlines, glow cursor, and matrix ambience."
+      description="Console-style portfolio preview."
     >
-      <div className="relative max-h-[min(1040px,calc(100vh-7rem))] overflow-auto rounded-2xl bg-[#02070a] font-mono text-emerald-100">
+      <div className="relative max-h-[min(1040px,calc(100vh-7rem))] overflow-auto bg-[#02070a] font-mono text-emerald-100">
         <TerminalMatrixCanvas />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.06)_1px,transparent_1px)] bg-[size:100%_4px]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_8%,rgba(16,185,129,0.2),transparent_30%),radial-gradient(circle_at_80%_14%,rgba(34,211,238,0.16),transparent_26%)]" />
@@ -534,11 +551,11 @@ export function PortfolioPreview({ data }: PortfolioPreviewProps) {
       data={data}
       variant="nova"
       title="Live Portfolio Preview"
-      description="Nova SaaS keeps the open product-page structure, richer animated sections, and a sliding cyan/amber cursor trail."
+      description="Clean startup-style preview."
     >
         <div
           ref={containerRef}
-          className={`relative max-h-[min(1040px,calc(100vh-7rem))] w-full max-w-full overflow-auto rounded-2xl transition-colors duration-500 ${surface}`}
+          className={`relative max-h-[min(1040px,calc(100vh-7rem))] w-full max-w-full overflow-auto transition-colors duration-500 ${surface}`}
         >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(251,191,36,0.14),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.14),transparent_24%)]" />
           <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:72px_72px] opacity-[0.06]" />

@@ -51,76 +51,114 @@ import {
 const initialResumeData: ResumeData = {
   personalInfo: {
     fullName: "Janmejoy Mahato",
-    title: "Frontend Developer",
-    email: "janmejoy@vampforge.dev",
-    phone: "+91 98765 43210",
-    location: "Bengaluru, India",
-    website: "https://janmejoy.dev",
+    title: "Web Developer",
+    email: "janmejoymahato529@gmail.com",
+    phone: "+91 7477661933",
+    location: "Kolkata, India",
+    website: "https://janmejoy.is-a.dev",
     linkedin: "https://linkedin.com/in/janmejoy",
-    github: "https://github.com/janmejoy",
+    github: "https://github.com/janmej0y",
   },
   summary:
-    "Frontend Developer with experience building scalable web applications using React, Next.js, and TypeScript.\nSkilled in Node.js, PostgreSQL, responsive design, and performance optimization.\nFocused on delivering fast, user-centric applications with clean architecture and measurable product impact.",
+    "Final-year B.Tech CSE student with hands-on full-stack web development experience.\nSkilled in React, Next.js, Node.js, Express, Supabase, MongoDB, Python, Redis, and secure authentication.\nQuick learner focused on clean UI, scalable products, and agile team contribution.",
   skills: [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "React",
     "Next.js",
     "TypeScript",
-    "React",
     "Tailwind CSS",
     "Node.js",
-    "PostgreSQL",
-    "OpenAI API",
-    "AWS",
+    "Express.js",
+    "MongoDB",
+    "MySQL",
+    "Supabase",
+    "Python",
+    "Redis",
+    "Git",
+    "Firebase Studio",
   ],
   experience: [
     {
       ...createExperienceItem(),
-      companyName: "Forge Labs",
-      role: "Senior Frontend Engineer",
+      companyName: "Personal and Academic Projects",
+      role: "Full Stack Web Developer",
       duration: "2023 - Present",
       description:
-        "Led frontend architecture for a developer workflow platform\nOptimized page performance across key onboarding and dashboard flows\nBuilt reusable product primitives used across multiple launches",
+        "Built full-stack applications with authentication, databases, dashboards, and deployment-ready frontend flows\nImplemented projects using React, Next.js, Node.js, Express, Supabase, MongoDB, and Firebase-ready architecture\nPracticed secure coding, clean UI structure, Git workflow, and responsive design",
     },
     {
       ...createExperienceItem(),
-      companyName: "Signal Works",
-      role: "Full-Stack Developer",
-      duration: "2021 - 2023",
+      companyName: "Self-Learning and Technical Training",
+      role: "Web Development Trainee",
+      duration: "2022 - Present",
       description:
-        "Built internal SaaS tooling with Next.js, Node.js, and PostgreSQL\nCollaborated with design and product to ship analytics-heavy experiences",
+        "Completed training across full-stack development, cybersecurity, ethical hacking, and cloud foundations\nStrengthened core CS concepts including data structures, backend APIs, authentication, and database integration",
     },
   ],
   education: [
     {
       ...createEducationItem(),
-      institutionName: "Tech University",
-      degree: "B.Tech in Computer Science",
-      year: "2021",
+      institutionName: "Greater Kolkata College of Engineering & Management",
+      degree: "Bachelor of Technology in Computer Science and Engineering",
+      year: "2022 - 2026",
       description:
-        "Focused on software systems, data structures, and human-centered product design while mentoring peers in frontend engineering.",
+        "CGPA: 7.20/10. Focused on software engineering, data structures, web development, and practical product building.",
+    },
+    {
+      ...createEducationItem(),
+      institutionName: "R.B.B. High (H.S) School",
+      degree: "Higher Secondary - WBCHSE",
+      year: "2021 - 2022",
+      description: "Percentage: 85.60%",
+    },
+    {
+      ...createEducationItem(),
+      institutionName: "R.B.B. High (H.S) School",
+      degree: "Secondary - WBBSE",
+      year: "2019 - 2020",
+      description: "Percentage: 69.70%",
     },
   ],
   projects: [
     {
       ...createProjectItem(),
-      projectName: "VampForge",
+      projectName: "Online Voting System",
       description:
-        "Built a developer identity platform combining portfolio building, resume generation, and deployment workflows.\nDesigned the builder experience for faster editing and clearer preview alignment.",
-      techStack: ["Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui"],
-      githubLink: "https://github.com/janmejoy/vampforge",
-      liveLink: "https://vampforge.dev",
+        "Developed a full-stack voting application with secure authentication, single-vote validation, and real-time result flow.\nBuilt backend APIs and frontend screens for a simple, reliable voting experience.",
+      techStack: ["Node.js", "Express", "SQLite", "JWT", "bcrypt", "Tailwind CSS"],
+      githubLink: "https://github.com/janmej0y/Online-Voting-System",
+      liveLink: "https://online-voting-system-henna.vercel.app",
     },
     {
       ...createProjectItem(),
-      projectName: "Resume Signal",
+      projectName: "RentHub",
       description:
-        "Created an ATS-focused resume optimizer with keyword insights and layout guidance.\nImproved iteration speed for developers applying to product engineering roles.",
-      techStack: ["React", "OpenAI API", "Node.js"],
-      githubLink: "https://github.com/janmejoy/resume-signal",
-      liveLink: "",
+        "Built a rental platform with authentication, storage, and listing management using Supabase.\nDesigned responsive product pages and clean data flows for renters and property listings.",
+      techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase"],
+      githubLink: "https://github.com/janmej0y/RentHub",
+      liveLink: "https://rent-hub-two.vercel.app",
+    },
+    {
+      ...createProjectItem(),
+      projectName: "Kurmi Chatbot",
+      description:
+        "Created an AI chatbot using Gemini API with authentication, Markdown support, and MongoDB storage.\nFocused on a smooth chat interface, secure login, and practical AI response flow.",
+      techStack: ["Next.js", "MongoDB", "NextAuth", "Gemini API", "Markdown"],
+      githubLink: "https://github.com/janmej0y/Baklol-Chatbot",
+      liveLink: "https://baklol-chatbot.vercel.app",
     },
   ],
-  certifications: ["AWS Certified Developer", "Meta Front-End Certificate"],
-  achievements: [],
+  certifications: [
+    "Cybersecurity Virtual Internship",
+    "Full Stack BCT Training",
+    "Ethical Hacking Internship",
+    "Cloud Security",
+    "Java Full Stack",
+    "Cloud Foundation",
+  ],
+  achievements: ["Languages: English, Hindi, Bengali"],
   template: "modern",
   pageCount: 1,
   photo: null,
@@ -528,8 +566,8 @@ export default function ResumeGeneratorPage() {
     <div className="w-full max-w-full space-y-6 overflow-x-hidden">
       <PageHeader
         badge="Resume Generator"
-        title="Generate ATS-optimized resumes with stronger content, cleaner structure, and one-page control"
-        description="Create a recruiter-approved single-column resume with stronger summaries, higher-impact bullets, strict section order, live preview, and PDF, DOCX, or print exports."
+        title="Create a clean ATS resume"
+        description="Edit, preview, and export a recruiter-ready resume."
         action={
           <div className="flex min-w-0 flex-col gap-3 lg:items-end">
             <div className="flex flex-wrap items-center gap-2">
@@ -553,7 +591,7 @@ export default function ResumeGeneratorPage() {
             <Button asChild className="w-full sm:w-auto">
               <Link href="/resume-generator/ai">
                 <Bot className="h-4 w-4" />
-                AI Powered Resume
+                AI Resume
               </Link>
             </Button>
           </div>
@@ -584,7 +622,7 @@ export default function ResumeGeneratorPage() {
                 {insights.atsScore}/100
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                ATS-safe structure, single-column layout, and simplified formatting are applied automatically.
+                ATS-safe single-column layout.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4">
@@ -601,7 +639,7 @@ export default function ResumeGeneratorPage() {
                 {completion}%
               </p>
               <p className="mt-1 break-words text-sm text-slate-400">
-                {visibleSections} active sections aligned to the recruiter-safe resume flow.
+                {visibleSections} active sections.
               </p>
             </div>
             <div className="shrink-0 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">

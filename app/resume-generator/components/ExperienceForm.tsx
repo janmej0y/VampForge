@@ -60,7 +60,7 @@ export function ExperienceForm({
           <label className="text-sm font-medium text-slate-200">Role</label>
           <Input
             value={item.role}
-            placeholder="Senior Frontend Engineer"
+            placeholder="Full Stack Web Developer"
             onChange={(event) => onChange("role", event.target.value)}
           />
         </div>
