@@ -21,6 +21,7 @@ import { PortfolioForm } from "./components/PortfolioForm";
 import { PortfolioPreview } from "./components/PortfolioPreview";
 import { createPortfolioDocument, createPortfolioFileName } from "./components/document";
 import { exportPortfolioCodeZip } from "./components/export";
+import { storePortfolioData } from "./components/storage";
 import {
   enhanceProjectDescription,
   generatePortfolioSummary,
@@ -449,6 +450,10 @@ export default function PortfolioPage() {
       setShowCustomPortfolioPopup(true);
     }
   }, []);
+
+  useEffect(() => {
+    storePortfolioData(portfolioData);
+  }, [portfolioData]);
 
   const handleProfileImageChange = async (file: File | null) => {
     if (!file) {

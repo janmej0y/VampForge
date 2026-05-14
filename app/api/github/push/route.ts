@@ -6,6 +6,10 @@ type PushRequestBody = {
   repoName?: string;
   customDomain?: string;
   environment?: "production" | "preview";
+  files?: Array<{
+    path?: string;
+    content?: string;
+  }>;
 };
 
 type GithubUser = {
@@ -29,6 +33,29 @@ function normalizeRepoName(value: string) {
       .replace(/[^a-z0-9._-]+/g, "-")
       .replace(/^-+|-+$/g, "") || "vampforge-portfolio"
   );
+}
+
+function encodeGithubPath(path: string) {
+  return path
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
+function normalizeFiles(files: PushRequestBody["files"]) {
+  if (!Array.isArray(files)) return [];
+
+  return files
+    .map((file) => ({
+      path: typeof file.path === "string" ? file.path.trim().replace(/^\/+/, "") : "",
+      content: typeof file.content === "string" ? file.content : "",
+    }))
+    .filter((file) => {
+      if (!file.path || !file.content) return false;
+      if (file.path.includes("..") || file.path.startsWith(".git/")) return false;
+      return file.path.length <= 220;
+    });
 }
 
 async function githubFetch<T>(path: string, token: string, init: RequestInit = {}) {
@@ -56,7 +83,7 @@ async function getExistingFileSha(
   path: string
 ) {
   const { response, data } = await githubFetch<GithubContent>(
-    `/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`,
+    `/repos/${owner}/${repo}/contents/${encodeGithubPath(path)}`,
     token
   );
 
@@ -64,7 +91,10 @@ async function getExistingFileSha(
   return data?.sha;
 }
 
-function createStarterFiles(body: Required<PushRequestBody>, owner: string) {
+function createStarterFiles(
+  body: Required<Omit<PushRequestBody, "files">>,
+  owner: string
+) {
   const title = body.portfolioName || "Janmejoy Portfolio";
   const domain = body.customDomain || "janmejoy.is-a.dev";
   const mode = body.environment === "production" ? "Production" : "Preview";
@@ -157,20 +187,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const files = createStarterFiles(
-    {
-      portfolioName: body.portfolioName || "Janmejoy Portfolio",
-      repoName,
-      customDomain: body.customDomain || "janmejoy.is-a.dev",
-      environment: body.environment || "production",
-    },
-    user.login
-  );
+  const files = normalizeFiles(body.files);
+  const filesToPush = files.length
+    ? files
+    : createStarterFiles(
+        {
+          portfolioName: body.portfolioName || "Janmejoy Portfolio",
+          repoName,
+          customDomain: body.customDomain || "janmejoy.is-a.dev",
+          environment: body.environment || "production",
+        },
+        user.login
+      );
 
-  for (const file of files) {
+  for (const file of filesToPush) {
     const sha = await getExistingFileSha(token, user.login, repoName, file.path);
     const { response } = await githubFetch(
-      `/repos/${user.login}/${repoName}/contents/${encodeURIComponent(file.path)}`,
+      `/repos/${user.login}/${repoName}/contents/${encodeGithubPath(file.path)}`,
       token,
       {
         method: "PUT",

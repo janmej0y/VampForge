@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getGithubClientId } from "@/lib/firebase-client";
+import { createPortfolioCodeBundle } from "@/app/portfolio/components/document";
+import { readStoredPortfolioData } from "@/app/portfolio/components/storage";
 import { DeployCard } from "./components/DeployCard";
 import { DeploymentHistory } from "./components/DeploymentHistory";
 import { DeploymentStatus } from "./components/DeploymentStatus";
@@ -203,6 +205,15 @@ export default function DeployPage() {
       setProgress(42);
       setActiveStepIndex(1);
 
+      const storedPortfolioData = readStoredPortfolioData();
+      const files = storedPortfolioData
+        ? createPortfolioCodeBundle(storedPortfolioData)
+        : [];
+
+      if (!files.length) {
+        throw new Error("Build your portfolio once before pushing the full code to GitHub.");
+      }
+
       const response = await fetch("/api/github/push", {
         method: "POST",
         headers: {
@@ -213,6 +224,7 @@ export default function DeployPage() {
           repoName: formData.githubRepoName || formData.subdomain,
           customDomain: formData.customDomain,
           environment: formData.environment,
+          files,
         }),
       });
 
