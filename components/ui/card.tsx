@@ -9,6 +9,7 @@ const Card = React.forwardRef<
     ref={ref}
     className={cn(
       "premium-card-shell relative w-full max-w-full overflow-hidden rounded-2xl transition duration-300 hover:-translate-y-0.5",
+      "hover:shadow-2xl hover:shadow-primary/20",
       className
     )}
     {...props}

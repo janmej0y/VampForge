@@ -51,10 +51,10 @@ import {
 const initialResumeData: ResumeData = {
   personalInfo: {
     fullName: "Janmejoy Mahato",
-    title: "Web Developer",
+    title: "Full Stack Web Developer",
     email: "janmejoymahato529@gmail.com",
     phone: "+91 7477661933",
-    location: "Kolkata, India",
+    location: "West Bengal, India",
     website: "https://janmejoy.is-a.dev",
     linkedin: "https://linkedin.com/in/janmejoy",
     github: "https://github.com/janmej0y",

@@ -11,6 +11,7 @@ import {
   Rocket,
   ShieldCheck,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -93,13 +94,23 @@ export function FeaturesSection() {
           initial={false}
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          className="grid gap-5 md:grid-cols-2 xl:grid-cols-5"
+          className="grid auto-rows-[minmax(260px,auto)] gap-5 md:grid-cols-2 xl:grid-cols-6"
         >
-          {features.map((feature) => {
+          {features.map((feature, index) => {
             const Icon = feature.icon;
 
             return (
-              <motion.div key={feature.title} variants={card}>
+              <motion.div
+                key={feature.title}
+                variants={card}
+                className={cn(
+                  index === 0 && "xl:col-span-2 xl:row-span-2",
+                  index === 1 && "xl:col-span-2",
+                  index === 2 && "xl:col-span-2",
+                  index === 3 && "xl:col-span-3",
+                  index === 4 && "xl:col-span-3"
+                )}
+              >
                 <Link
                   href={feature.href}
                   className="group relative block h-full overflow-hidden rounded-[1.7rem] p-px transition duration-300 hover:-translate-y-2 hover:shadow-[0_30px_100px_rgba(34,211,238,0.12)]"

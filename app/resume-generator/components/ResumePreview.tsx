@@ -684,7 +684,7 @@ function ResumeCanvas({ data }: { data: ResumeData }) {
         </Badge>
       </div>
 
-      <div className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(15,23,42,0.48))] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <div className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(9,9,11,0.66))] shadow-[0_28px_90px_rgba(2,8,23,0.36),inset_0_1px_0_rgba(255,255,255,0.08)]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
@@ -697,9 +697,9 @@ function ResumeCanvas({ data }: { data: ResumeData }) {
             Auto-fit
           </div>
         </div>
-      <div className="w-full max-w-full overflow-auto bg-[#dbe4f0]/20 p-3 sm:p-5">
+      <div className="w-full max-w-full overflow-auto bg-[radial-gradient(circle_at_50%_0%,rgba(96,165,250,0.18),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0.26),rgba(2,6,23,0.42))] p-5 [perspective:1600px] sm:p-8">
         <div
-          className="relative mx-auto"
+          className="relative mx-auto drop-shadow-2xl"
           style={{
             width: viewportWidth,
             height: viewportHeight,
@@ -713,10 +713,10 @@ function ResumeCanvas({ data }: { data: ResumeData }) {
         >
           <div
             ref={sheetRef}
-            className="absolute left-0 top-0 origin-top-left shadow-[0_25px_80px_rgba(15,23,42,0.18)]"
+            className="absolute left-0 top-0 origin-top-left rounded-sm shadow-[0_38px_120px_rgba(2,8,23,0.34),0_14px_34px_rgba(59,130,246,0.16)] ring-1 ring-white/40 [transform-style:preserve-3d]"
             style={{
               width: A4_RESUME_WIDTH,
-              transform: `scale(${scale})`,
+              transform: `rotateX(3deg) rotateY(-2deg) scale(${scale})`,
             }}
           >
             <ResumeSheet data={data} />

@@ -162,14 +162,23 @@ function SidebarContent({
   );
 }
 
-export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  mobileOpen,
+  onCloseMobile,
+  onToggleCollapse,
+}: SidebarProps) {
   return (
     <>
       <aside
-        className="glass-panel fixed inset-y-4 left-4 z-40 hidden w-64 max-w-[calc(100vw-2rem)] rounded-[2rem] border-white/10 p-4 shadow-[0_30px_90px_rgba(2,6,23,0.42)] transition-all duration-300 lg:flex"
+        className={cn(
+          "glass-panel fixed inset-y-4 left-4 z-40 hidden max-w-[calc(100vw-2rem)] rounded-[2rem] border-white/10 p-4 shadow-[0_30px_90px_rgba(2,6,23,0.42)] transition-all duration-300 lg:flex",
+          collapsed ? "w-20" : "w-64"
+        )}
       >
         <SidebarContent
-          collapsed={false}
+          collapsed={collapsed}
+          onToggleCollapse={onToggleCollapse}
         />
       </aside>
 

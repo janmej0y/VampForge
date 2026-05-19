@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BrainCircuit,
@@ -13,11 +13,9 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 26 },
-  visible: { opacity: 1, y: 0 },
-};
+import { CursorLogo } from "@/components/landing/cursor-logo";
+import { TerminalGreeting } from "@/components/landing/terminal-greeting";
+import { softFadeUp, staggerContainer } from "@/lib/animations";
 
 const tools = [
   { label: "Portfolio", value: "Live", icon: FolderKanban, tone: "from-cyan-400 to-blue-500" },
@@ -26,6 +24,8 @@ const tools = [
 ];
 
 export function HeroSection() {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section className="relative min-h-[calc(100vh-92px)] overflow-hidden px-4 pb-16 pt-12 sm:px-6 lg:pb-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(56,189,248,0.24),transparent_30%),radial-gradient(circle_at_72%_18%,rgba(168,85,247,0.18),transparent_28%)]" />
@@ -40,7 +40,7 @@ export function HeroSection() {
       >
         <motion.div
           className="absolute inset-0 rounded-[3rem] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.58),rgba(30,41,59,0.28))] shadow-[0_40px_160px_rgba(2,8,23,0.7)] backdrop-blur-2xl"
-          animate={{ y: [0, -14, 0] }}
+          animate={reduceMotion ? undefined : { y: [0, -14, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         >
           <div className="absolute inset-[1px] rounded-[calc(3rem-1px)] bg-[linear-gradient(135deg,rgba(59,130,246,0.13),rgba(168,85,247,0.08),rgba(34,211,238,0.1))]" />
@@ -60,7 +60,7 @@ export function HeroSection() {
                         ? "border border-cyan-300/30 bg-cyan-300/10 text-cyan-100"
                         : "border border-white/10 bg-white/[0.045] text-slate-300"
                     }`}
-                    animate={{ opacity: index === 1 ? [0.75, 1, 0.75] : 1 }}
+                    animate={reduceMotion ? undefined : { opacity: index === 1 ? [0.75, 1, 0.75] : 1 }}
                     transition={{ duration: 2.8, repeat: Infinity, delay: index * 0.15 }}
                   >
                     {item}
@@ -101,7 +101,7 @@ export function HeroSection() {
                     <motion.div
                       key={tool.label}
                       className="rounded-[1.4rem] border border-white/10 bg-white/[0.055] p-4"
-                      animate={{ y: [0, index % 2 ? 8 : -8, 0] }}
+                      animate={reduceMotion ? undefined : { y: [0, index % 2 ? 8 : -8, 0] }}
                       transition={{ duration: 5 + index, repeat: Infinity, ease: "easeInOut" }}
                     >
                       <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${tool.tone}`}>
@@ -143,11 +143,11 @@ export function HeroSection() {
         className="relative mx-auto flex min-h-[650px] max-w-7xl items-center"
         initial={false}
         animate="visible"
-        transition={{ staggerChildren: 0.12 }}
+        variants={staggerContainer}
       >
         <div className="max-w-3xl py-14 lg:max-w-[680px] lg:py-24 xl:max-w-[720px]">
           <motion.div
-            variants={fadeUp}
+            variants={softFadeUp}
             className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-100 shadow-[0_0_40px_rgba(34,211,238,0.12)] backdrop-blur-xl"
           >
             <Zap className="h-4 w-4" />
@@ -155,8 +155,8 @@ export function HeroSection() {
           </motion.div>
 
           <motion.h1
-            variants={fadeUp}
-            className="mt-8 max-w-full text-balance text-5xl font-semibold tracking-[-0.04em] text-white sm:text-6xl lg:text-[4.75rem] lg:leading-[1.02] xl:text-[5.25rem] xl:leading-[0.98]"
+            variants={softFadeUp}
+            className="mt-8 max-w-full text-balance text-5xl font-semibold text-white sm:text-6xl lg:text-[4.75rem] lg:leading-[1.02] xl:text-[5.25rem] xl:leading-[0.98]"
           >
             Forge a{" "}
             <span className="kinetic-gradient-text typography-glow">
@@ -169,13 +169,13 @@ export function HeroSection() {
           </motion.h1>
 
           <motion.p
-            variants={fadeUp}
+            variants={softFadeUp}
             className="mt-6 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl"
           >
             Build a magnetic portfolio, generate ATS-ready resumes, practice interviews, and deploy your career surface from one cinematic product workspace.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="action-cluster mt-9 sm:justify-start">
+          <motion.div variants={softFadeUp} className="action-cluster mt-9 sm:justify-start">
             <Button asChild size="lg">
               <Link href="/dashboard">
                 Get Started
@@ -190,7 +190,7 @@ export function HeroSection() {
             </Button>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="mt-12 grid max-w-2xl gap-3 sm:grid-cols-3">
+          <motion.div variants={softFadeUp} className="mt-12 grid max-w-2xl gap-3 sm:grid-cols-3">
             {[
               ["1000+", "developers trusted VampForge"],
               ["3x", "faster profile iteration"],
@@ -204,6 +204,12 @@ export function HeroSection() {
                 <div className="mt-1 text-sm leading-6 text-slate-400">{label}</div>
               </div>
             ))}
+          </motion.div>
+          <motion.div variants={softFadeUp} className="mt-6 grid max-w-2xl gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start">
+            <div className="hidden sm:block">
+              <CursorLogo />
+            </div>
+            <TerminalGreeting />
           </motion.div>
         </div>
       </motion.div>

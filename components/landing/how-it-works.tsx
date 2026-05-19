@@ -54,14 +54,16 @@ export function HowItWorks() {
             transition={{ duration: 1.2, ease: "easeOut" }}
           />
 
-          <div className="grid gap-5 lg:grid-cols-4">
+          <div className="grid auto-rows-[minmax(220px,auto)] gap-5 lg:grid-cols-6">
             {steps.map((step, index) => {
               const Icon = step.icon;
 
               return (
                 <motion.div
                   key={step.title}
-                  className="group relative rounded-[1.8rem] border border-white/10 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(2,8,23,0.32)] backdrop-blur-xl transition duration-300 hover:-translate-y-2 hover:border-cyan-300/30 hover:bg-white/[0.065]"
+                  className={`group relative rounded-[1.8rem] border border-white/10 bg-white/[0.045] p-6 shadow-[0_24px_80px_rgba(2,8,23,0.32)] backdrop-blur-xl transition duration-300 hover:-translate-y-2 hover:border-cyan-300/30 hover:bg-white/[0.065] ${
+                    index === 0 || index === 3 ? "lg:col-span-3" : "lg:col-span-3 xl:col-span-2"
+                  }`}
                   initial={false}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.35 }}

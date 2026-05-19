@@ -12,6 +12,7 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
@@ -46,12 +47,12 @@ export function AppShell({ children }: AppShellProps) {
         <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:96px_96px] opacity-[0.035]" />
         <div
           className={`pointer-events-none absolute inset-x-0 top-0 h-56 ${
-            theme === "light" ? "bg-[linear-gradient(180deg,rgba(20,184,166,0.12),transparent)]" : "bg-[linear-gradient(180deg,rgba(20,184,166,0.1),transparent)]"
+            theme === "light" ? "bg-[linear-gradient(180deg,rgba(59,130,246,0.12),transparent)]" : "bg-[linear-gradient(180deg,rgba(59,130,246,0.14),transparent)]"
           }`}
         />
         <div
           className={`pointer-events-none absolute inset-y-0 right-0 w-1/3 ${
-            theme === "light" ? "bg-[linear-gradient(270deg,rgba(245,158,11,0.08),transparent)]" : "bg-[linear-gradient(270deg,rgba(245,158,11,0.07),transparent)]"
+            theme === "light" ? "bg-[linear-gradient(270deg,rgba(185,28,28,0.08),transparent)]" : "bg-[linear-gradient(270deg,rgba(185,28,28,0.1),transparent)]"
           }`}
         />
         <div
@@ -68,13 +69,13 @@ export function AppShell({ children }: AppShellProps) {
         />
 
         <Sidebar
-          collapsed={false}
+          collapsed={collapsed}
           mobileOpen={mobileOpen}
           onCloseMobile={() => setMobileOpen(false)}
-          onToggleCollapse={() => undefined}
+          onToggleCollapse={() => setCollapsed((value) => !value)}
         />
 
-        <div className="relative min-w-0 min-h-screen w-full transition-all duration-300 lg:pl-72">
+        <div className={`relative min-h-screen w-full min-w-0 transition-all duration-300 ${collapsed ? "lg:pl-28" : "lg:pl-72"}`}>
           <div className="mx-auto w-full max-w-[1400px] px-4 py-4 md:px-6 md:py-6 lg:px-8">
             <Navbar
               theme={theme}

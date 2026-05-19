@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { pageTransition } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type PageMotionProps = {
@@ -75,10 +76,10 @@ export function PageMotion({ children, className }: PageMotionProps) {
         key={pathname}
         ref={pageRef}
         className={cn("motion-page min-w-0", className)}
-        initial={reduceMotion ? false : { opacity: 0, y: 16, filter: "blur(6px)" }}
-        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -10, filter: "blur(4px)" }}
-        transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+        variants={reduceMotion ? undefined : pageTransition}
+        initial={reduceMotion ? false : "hidden"}
+        animate={reduceMotion ? { opacity: 1 } : "visible"}
+        exit={reduceMotion ? { opacity: 1 } : "exit"}
       >
         {children}
       </motion.div>
