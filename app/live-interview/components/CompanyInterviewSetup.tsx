@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import {
+  AlertCircle,
   Building2,
+  CheckCircle2,
   KeyRound,
   Mic,
   PlayCircle,
@@ -78,6 +80,7 @@ export function CompanyInterviewSetup({
   const hasGeminiApiKey = geminiApiKey.trim().length > 0;
   const hasMediaPermissions = permissionStatus === "granted";
   const selectedCompany = setup.company ?? "google";
+  const missingItems = hasMediaPermissions ? [] : ["Camera and microphone access"];
 
   return (
     <div className="space-y-6">
@@ -102,20 +105,6 @@ export function CompanyInterviewSetup({
               </p>
             </div>
           </div>
-
-          <Button
-            onClick={onStart}
-            disabled={!hasMediaPermissions || isGeneratingQuestion}
-          >
-            <PlayCircle className="h-4 w-4" />
-            {isGeneratingQuestion
-              ? "Preparing Interview"
-              : hasGeminiApiKey && hasMediaPermissions
-                ? "Start Company Interview"
-                : hasMediaPermissions
-                  ? "Start Basic Interview"
-                  : "Allow Devices First"}
-          </Button>
         </div>
       </motion.section>
 
@@ -307,6 +296,70 @@ export function CompanyInterviewSetup({
               ) : null}
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      <section className="section-card mesh-card premium-ring border-primary/15 p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="section-label">Final Step</div>
+            <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white">
+              Generate Interview Room
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Start after selecting the company, role, difficulty, duration, and device access.
+            </p>
+          </div>
+
+          <div className="action-bar lg:w-auto">
+            <div
+              className={`w-full rounded-2xl border p-4 ${
+                hasMediaPermissions
+                  ? "border-emerald-300/20 bg-emerald-300/10"
+                  : "border-amber-300/20 bg-amber-300/10"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {hasMediaPermissions ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                ) : (
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+                )}
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white">
+                    {hasMediaPermissions
+                      ? "Interview setup is ready to generate."
+                      : "Complete these fields first"}
+                  </div>
+                  {!hasMediaPermissions ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {missingItems.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-white/10 bg-slate-950/35 px-3 py-1 text-xs text-amber-100"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={onStart}
+              disabled={!hasMediaPermissions || isGeneratingQuestion}
+            >
+              <PlayCircle className="h-4 w-4" />
+              {isGeneratingQuestion
+                ? "Generating Interview..."
+                : hasGeminiApiKey && hasMediaPermissions
+                  ? "Generate Company Interview"
+                  : hasMediaPermissions
+                    ? "Generate Basic Interview"
+                    : "Allow Devices First"}
+            </Button>
+          </div>
         </div>
       </section>
     </div>

@@ -96,6 +96,12 @@ type PortfolioFormProps = {
   resumeUpload: UploadStatus;
   onGenerateSummary: () => void;
   onEnhanceProjects: () => void;
+  actions?: React.ReactNode;
+  actionStatus?: {
+    isReady: boolean;
+    readyText: string;
+    missingItems: string[];
+  };
 };
 
 const portfolioTemplates: Array<{
@@ -271,6 +277,12 @@ function UploadMeter({
   );
 }
 
+function FieldIssue({ show, children }: { show: boolean; children: React.ReactNode }) {
+  if (!show) return null;
+
+  return <p className="text-xs leading-5 text-amber-200">{children}</p>;
+}
+
 export function PortfolioForm({
   data,
   onTemplateChange,
@@ -298,6 +310,8 @@ export function PortfolioForm({
   resumeUpload,
   onGenerateSummary,
   onEnhanceProjects,
+  actions,
+  actionStatus,
 }: PortfolioFormProps) {
   const hasUploadedResume = data.contact.resumeLink.startsWith("data:");
 
@@ -379,6 +393,9 @@ export function PortfolioForm({
                 placeholder="Janmejoy Mahato"
                 onChange={(event) => onFieldChange("name", event.target.value)}
               />
+              <FieldIssue show={!data.name.trim()}>
+                Full name is required before preview or download.
+              </FieldIssue>
             </div>
 
             <div className="space-y-2">
@@ -388,6 +405,9 @@ export function PortfolioForm({
                 placeholder="Web Developer"
                 onChange={(event) => onFieldChange("title", event.target.value)}
               />
+              <FieldIssue show={!data.title.trim()}>
+                Role is required before preview or download.
+              </FieldIssue>
             </div>
 
             <div className="space-y-2 md:col-span-2">
@@ -400,6 +420,9 @@ export function PortfolioForm({
                 className="min-h-[150px] resize-none"
                 onChange={(event) => onFieldChange("summary", event.target.value)}
               />
+              <FieldIssue show={!data.summary.trim()}>
+                Add a hero summary.
+              </FieldIssue>
             </div>
           </div>
           </div>
@@ -420,6 +443,9 @@ export function PortfolioForm({
                 className="min-h-[130px] resize-none"
                 onChange={(event) => onFieldChange("about", event.target.value)}
               />
+              <FieldIssue show={!data.about.trim()}>
+                Add a short bio for the about section.
+              </FieldIssue>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-200">
@@ -485,6 +511,9 @@ export function PortfolioForm({
               onChange={onSkillsChange}
               placeholder="Next.js"
             />
+            <FieldIssue show={!data.skills.length}>
+              Add at least one skill.
+            </FieldIssue>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
               <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
@@ -499,6 +528,9 @@ export function PortfolioForm({
                   placeholder="janmejoymahato529@gmail.com"
                   onChange={(event) => onContactChange("email", event.target.value)}
                 />
+                <FieldIssue show={!data.contact.email.trim()}>
+                  Email is required before preview or download.
+                </FieldIssue>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-200">Phone</label>
@@ -705,6 +737,11 @@ export function PortfolioForm({
                 }
               />
             ))}
+            {!data.projects.some((project) => project.name.trim() && project.description.trim()) ? (
+              <FieldIssue show>
+                Add at least one project with a name and description.
+              </FieldIssue>
+            ) : null}
           </div>
         </FormSection>
 
@@ -788,6 +825,53 @@ export function PortfolioForm({
             ))}
           </div>
         </FormSection>
+
+        {actions ? (
+          <FormSection
+            icon={WandSparkles}
+            step="Final Step"
+            title="Generate, Preview, and Download"
+            description="Use these actions after completing the portfolio form."
+          >
+            {actionStatus ? (
+              <div
+                className={`mb-4 rounded-2xl border p-4 ${
+                  actionStatus.isReady
+                    ? "border-emerald-300/20 bg-emerald-300/10"
+                    : "border-amber-300/20 bg-amber-300/10"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  {actionStatus.isReady ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                  ) : (
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white">
+                      {actionStatus.isReady ? actionStatus.readyText : "Complete these fields first"}
+                    </div>
+                    {!actionStatus.isReady ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {actionStatus.missingItems.map((item) => (
+                          <span
+                            key={item}
+                            className="rounded-full border border-white/10 bg-slate-950/35 px-3 py-1 text-xs text-amber-100"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            <div className="action-bar justify-start sm:justify-start">
+              {actions}
+            </div>
+          </FormSection>
+        ) : null}
       </CardContent>
     </Card>
   );

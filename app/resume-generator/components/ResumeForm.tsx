@@ -84,6 +84,12 @@ type ResumeFormProps = {
   onGenerateSummary: () => void;
   onEnhanceExperience: () => void;
   onEnhanceProjects: () => void;
+  actions?: React.ReactNode;
+  actionStatus?: {
+    isReady: boolean;
+    readyText: string;
+    missingItems: string[];
+  };
 };
 
 const personalFields: Array<{
@@ -285,6 +291,12 @@ function UploadMeter({ status }: { status: UploadStatus }) {
   );
 }
 
+function FieldIssue({ show, children }: { show: boolean; children: React.ReactNode }) {
+  if (!show) return null;
+
+  return <p className="text-xs leading-5 text-amber-200">{children}</p>;
+}
+
 export function ResumeForm({
   data,
   categorizedSkills,
@@ -313,6 +325,8 @@ export function ResumeForm({
   onGenerateSummary,
   onEnhanceExperience,
   onEnhanceProjects,
+  actions,
+  actionStatus,
 }: ResumeFormProps) {
   const isExecutiveTemplate = data.template === "executive";
 
@@ -353,6 +367,16 @@ export function ResumeForm({
                       onPersonalInfoChange(field.key, event.target.value)
                     }
                   />
+                  <FieldIssue
+                    show={
+                      (field.key === "fullName" ||
+                        field.key === "title" ||
+                        field.key === "email") &&
+                      !data.personalInfo[field.key].trim()
+                    }
+                  >
+                    {field.label} is required before export.
+                  </FieldIssue>
                 </div>
               ))}
             </div>
@@ -550,6 +574,9 @@ export function ResumeForm({
                 className="min-h-[150px] resize-none"
                 onChange={(event) => onSummaryChange(event.target.value)}
               />
+              <FieldIssue show={!data.summary.trim()}>
+                Add a professional summary before generating the resume.
+              </FieldIssue>
             </div>
             </div>
 
@@ -560,6 +587,9 @@ export function ResumeForm({
                 value={data.skills}
                 onChange={onSkillsChange}
               />
+              <FieldIssue show={!data.skills.length}>
+                Add at least one skill.
+              </FieldIssue>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
@@ -620,6 +650,11 @@ export function ResumeForm({
                 onChange={(field, value) => onExperienceChange(item.id, field, value)}
               />
             ))}
+            {!data.experience.some((item) => item.companyName.trim() && item.role.trim() && item.description.trim()) ? (
+              <FieldIssue show>
+                Add at least one complete experience entry with company, role, and impact bullets.
+              </FieldIssue>
+            ) : null}
           </div>
         </FormSection>
 
@@ -708,6 +743,53 @@ export function ResumeForm({
             />
           </div>
         </FormSection>
+
+        {actions ? (
+          <FormSection
+            icon={WandSparkles}
+            step="Final Step"
+            title="Generate, Preview, and Download"
+            description="Use these actions after completing the resume form."
+          >
+            {actionStatus ? (
+              <div
+                className={`mb-4 rounded-2xl border p-4 ${
+                  actionStatus.isReady
+                    ? "border-emerald-300/20 bg-emerald-300/10"
+                    : "border-amber-300/20 bg-amber-300/10"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  {actionStatus.isReady ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                  ) : (
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white">
+                      {actionStatus.isReady ? actionStatus.readyText : "Complete these fields first"}
+                    </div>
+                    {!actionStatus.isReady ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {actionStatus.missingItems.map((item) => (
+                          <span
+                            key={item}
+                            className="rounded-full border border-white/10 bg-slate-950/35 px-3 py-1 text-xs text-amber-100"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            <div className="action-bar justify-start sm:justify-start">
+              {actions}
+            </div>
+          </FormSection>
+        ) : null}
       </CardContent>
     </Card>
   );

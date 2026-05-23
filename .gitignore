@@ -2,21 +2,23 @@
 node_modules/
 .pnp/
 .pnp.js
+.pnp.cjs
 .yarn/install-state.gz
 
-# Next.js
+# Next.js build output
 .next/
 out/
 build/
-next-env.d.ts
+dist/
+
+# TypeScript
 *.tsbuildinfo
 
 # Environment variables and secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.sample
 *.pem
 *.key
 *.crt
@@ -28,8 +30,11 @@ next-env.d.ts
 firebase-debug.log
 firebase-debug.*.log
 firestore-debug.log
-ui-debug.log
+firestore-debug.*.log
 database-debug.log
+database-debug.*.log
+ui-debug.log
+ui-debug.*.log
 *.runtimeconfig.json
 
 # Testing and coverage
@@ -37,16 +42,27 @@ coverage/
 .nyc_output/
 playwright-report/
 test-results/
+blob-report/
 
 # Logs
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Caches
+.cache/
+.eslintcache
+.stylelintcache
+.turbo/
+.parcel-cache/
+
 # OS files
 .DS_Store
+.DS_Store?
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -58,11 +74,14 @@ Desktop.ini
 .idea/
 *.swp
 *.swo
+*.swn
 
-# Generated archives and exports
+# Generated archives and document exports
 *.zip
 *.tar
 *.tar.gz
 *.tgz
+*.rar
+*.7z
 *.pdf
 *.docx

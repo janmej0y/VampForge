@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Eye, Globe, Rocket, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getGithubClientId } from "@/lib/firebase-client";
@@ -258,6 +259,11 @@ export default function DeployPage() {
         },
         ...current,
       ]);
+      showToast({
+        title: "Portfolio pushed",
+        description: "Your portfolio code is now available in GitHub.",
+        variant: "success",
+      });
     } catch (error) {
       setDeploymentStatus("idle");
       setProgress(0);
@@ -265,6 +271,11 @@ export default function DeployPage() {
       setGithubConnectionError(
         error instanceof Error ? error.message : "GitHub push failed."
       );
+      showToast({
+        title: "GitHub push failed",
+        description: error instanceof Error ? error.message : "GitHub push failed.",
+        variant: "error",
+      });
     }
   };
 
@@ -273,6 +284,11 @@ export default function DeployPage() {
 
     await navigator.clipboard.writeText(liveUrl);
     setCopied(true);
+    showToast({
+      title: "URL copied",
+      description: "The GitHub repository link is on your clipboard.",
+      variant: "success",
+    });
 
     if (copyTimeoutRef.current) {
       clearTimeout(copyTimeoutRef.current);

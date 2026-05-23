@@ -1,22 +1,29 @@
 "use client";
 
-import { useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import Link from "next/link";
 import {
   Bot,
+  Columns3,
   Download,
   Eye,
   FileSignature,
   Layers3,
   Printer,
+  RotateCcw,
   Sparkles,
   WandSparkles,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { openGeneratedDocument } from "@/lib/export-utils";
+import {
+  readStoredUserProfile,
+  storeUserProfile,
+} from "@/lib/user-profile";
 import { ResumeForm } from "./components/ResumeForm";
 import { ResumeInsightsPanel } from "./components/ResumeInsightsPanel";
 import { ResumePreview } from "./components/ResumePreview";
@@ -175,6 +182,8 @@ const idleUploadStatus: UploadStatus = {
   progress: 0,
 };
 
+const RESUME_AUTOSAVE_KEY = "vampforge-resume-builder-draft";
+
 type ResumeAction =
   | {
       type: "updatePersonalInfo";
@@ -218,7 +227,8 @@ type ResumeAction =
   | { type: "updateProjectTechStack"; id: string; value: string[] }
   | { type: "enhanceSummary" }
   | { type: "enhanceExperience" }
-  | { type: "enhanceProjects" };
+  | { type: "enhanceProjects" }
+  | { type: "loadResume"; value: ResumeData };
 
 function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
   switch (action.type) {
@@ -324,6 +334,8 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
         ...state,
         projects: enhanceProjectItems(state.projects, state.skills),
       };
+    case "loadResume":
+      return action.value;
     default:
       return state;
   }
@@ -400,6 +412,8 @@ export default function ResumeGeneratorPage() {
   const [lastGeneratedAt, setLastGeneratedAt] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState<"pdf" | "docx" | null>(null);
   const [photoUpload, setPhotoUpload] = useState<UploadStatus>(idleUploadStatus);
+  const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+  const [viewMode, setViewMode] = useState<"both" | "form" | "preview">("both");
 
   const preparedResumeData = useMemo(
     () => prepareResumeForOutput(resumeData),
@@ -477,6 +491,114 @@ export default function ResumeGeneratorPage() {
     }).format(lastGeneratedAt)}`;
   }, [insights.blockingIssues.length, insights.isReady, lastGeneratedAt]);
 
+  const formMissingItems = useMemo(() => {
+    const missing: string[] = [];
+    const hasExperience = resumeData.experience.some(
+      (item) => item.companyName.trim() && item.role.trim() && item.description.trim()
+    );
+
+    if (!resumeData.personalInfo.fullName.trim()) missing.push("Full name");
+    if (!resumeData.personalInfo.title.trim()) missing.push("Professional title");
+    if (!resumeData.personalInfo.email.trim()) missing.push("Email");
+    if (!resumeData.summary.trim()) missing.push("Professional summary");
+    if (!resumeData.skills.length) missing.push("Skills");
+    if (!hasExperience) missing.push("Work experience");
+
+    return missing;
+  }, [resumeData]);
+  const isFormReady = formMissingItems.length === 0;
+  const canUseResumeActions = isFormReady && insights.isReady;
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(RESUME_AUTOSAVE_KEY);
+      const storedProfile = readStoredUserProfile();
+
+      if (savedDraft) {
+        dispatch({ type: "loadResume", value: JSON.parse(savedDraft) as ResumeData });
+        showToast({
+          title: "Resume draft restored",
+          description: "Your last saved resume builder draft was loaded.",
+          variant: "info",
+        });
+      } else if (storedProfile) {
+        dispatch({
+          type: "loadResume",
+          value: {
+            ...initialResumeData,
+            personalInfo: {
+              ...initialResumeData.personalInfo,
+              fullName: storedProfile.fullName || initialResumeData.personalInfo.fullName,
+              title: storedProfile.title || initialResumeData.personalInfo.title,
+              email: storedProfile.email || initialResumeData.personalInfo.email,
+              phone: storedProfile.phone || initialResumeData.personalInfo.phone,
+              location: storedProfile.location || initialResumeData.personalInfo.location,
+              website: storedProfile.website || initialResumeData.personalInfo.website,
+              linkedin: storedProfile.linkedin || initialResumeData.personalInfo.linkedin,
+              github: storedProfile.github || initialResumeData.personalInfo.github,
+            },
+          },
+        });
+      }
+    } catch {
+      showToast({
+        title: "Could not restore resume draft",
+        description: "The saved draft was invalid, so the sample resume stayed loaded.",
+        variant: "error",
+      });
+    } finally {
+      setHasHydratedDraft(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) return;
+
+    const timeout = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(RESUME_AUTOSAVE_KEY, JSON.stringify(resumeData));
+      } catch {
+        // Ignore storage failures; the editor state remains available in memory.
+      }
+    }, 450);
+
+    return () => window.clearTimeout(timeout);
+  }, [hasHydratedDraft, resumeData]);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) return;
+
+    storeUserProfile({
+      fullName: resumeData.personalInfo.fullName,
+      title: resumeData.personalInfo.title,
+      email: resumeData.personalInfo.email,
+      phone: resumeData.personalInfo.phone,
+      location: resumeData.personalInfo.location,
+      website: resumeData.personalInfo.website,
+      linkedin: resumeData.personalInfo.linkedin,
+      github: resumeData.personalInfo.github,
+    });
+  }, [hasHydratedDraft, resumeData.personalInfo]);
+
+  const handleResetForm = () => {
+    window.localStorage.removeItem(RESUME_AUTOSAVE_KEY);
+    dispatch({ type: "loadResume", value: initialResumeData });
+    showToast({
+      title: "Resume form reset",
+      description: "The default sample resume has been restored.",
+      variant: "success",
+    });
+  };
+
+  const handleLoadSample = () => {
+    dispatch({ type: "loadResume", value: initialResumeData });
+    showToast({
+      title: "Sample resume loaded",
+      description: "You can edit the sample and it will autosave.",
+      variant: "success",
+    });
+  };
+
   const handlePhotoChange = async (file: File | null) => {
     if (!file) {
       dispatch({ type: "setPhoto", value: null });
@@ -516,6 +638,11 @@ export default function ResumeGeneratorPage() {
         fileName: file.name,
         message: "Photo upload complete.",
       });
+      showToast({
+        title: "Photo uploaded",
+        description: "Your resume photo is optimized for export.",
+        variant: "success",
+      });
       window.setTimeout(() => setPhotoUpload(idleUploadStatus), 1800);
     } catch {
       dispatch({ type: "setPhoto", value: null });
@@ -525,6 +652,11 @@ export default function ResumeGeneratorPage() {
         fileName: file.name,
         message: "Photo upload failed. Try a smaller PNG or JPG.",
       });
+      showToast({
+        title: "Photo upload failed",
+        description: "Try a smaller PNG or JPG.",
+        variant: "error",
+      });
     }
   };
 
@@ -532,12 +664,22 @@ export default function ResumeGeneratorPage() {
     if (!insights.isReady) return;
     openGeneratedDocument(createResumeDocument(preparedResumeData));
     setLastGeneratedAt(new Date());
+    showToast({
+      title: "Resume preview opened",
+      description: "Your generated resume opened in a new browser tab.",
+      variant: "success",
+    });
   };
 
   const handlePrint = () => {
     if (!insights.isReady) return;
     printResumeDocument(preparedResumeData);
     setLastGeneratedAt(new Date());
+    showToast({
+      title: "Print preview opened",
+      description: "Use your browser dialog to save or print the resume.",
+      variant: "success",
+    });
   };
 
   const handleExportPdf = async () => {
@@ -546,6 +688,11 @@ export default function ResumeGeneratorPage() {
     try {
       await exportResumePdf(preparedResumeData);
       setLastGeneratedAt(new Date());
+      showToast({
+        title: "PDF downloaded",
+        description: "Your resume PDF export is ready.",
+        variant: "success",
+      });
     } finally {
       setIsExporting(null);
     }
@@ -557,6 +704,11 @@ export default function ResumeGeneratorPage() {
     try {
       await exportResumeDocx(preparedResumeData);
       setLastGeneratedAt(new Date());
+      showToast({
+        title: "DOCX downloaded",
+        description: "Your editable Word resume export is ready.",
+        variant: "success",
+      });
     } finally {
       setIsExporting(null);
     }
@@ -654,7 +806,42 @@ export default function ResumeGeneratorPage() {
         onSelect={(template) => dispatch({ type: "setTemplate", value: template })}
       />
 
-      <section className="grid w-full max-w-full grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(380px,0.72fr)]">
+      <section className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap gap-2">
+          {[
+            { id: "both" as const, label: "Both", icon: Columns3 },
+            { id: "form" as const, label: "Form", icon: FileSignature },
+            { id: "preview" as const, label: "Preview", icon: Eye },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Button
+                key={item.id}
+                type="button"
+                variant={viewMode === item.id ? "default" : "secondary"}
+                onClick={() => setViewMode(item.id)}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            );
+          })}
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+          <Button type="button" variant="secondary" onClick={handleLoadSample}>
+            <Sparkles className="h-4 w-4" />
+            Load Sample
+          </Button>
+          <Button type="button" variant="outline" onClick={handleResetForm}>
+            <RotateCcw className="h-4 w-4" />
+            Reset Form
+          </Button>
+        </div>
+      </section>
+
+      <section data-motion-skip className="grid w-full max-w-full grid-cols-1 gap-6">
+        {viewMode !== "preview" ? (
         <div className="min-w-0">
           <ResumeForm
           data={resumeData}
@@ -712,42 +899,48 @@ export default function ResumeGeneratorPage() {
           onGenerateSummary={() => dispatch({ type: "enhanceSummary" })}
           onEnhanceExperience={() => dispatch({ type: "enhanceExperience" })}
           onEnhanceProjects={() => dispatch({ type: "enhanceProjects" })}
+          actions={
+            <>
+              <Button onClick={handleGenerate} disabled={!canUseResumeActions}>
+                <WandSparkles className="h-4 w-4" />
+                Generate Resume
+              </Button>
+              <Button variant="secondary" onClick={handlePrint} disabled={!canUseResumeActions}>
+                <Printer className="h-4 w-4" />
+                Preview / Print
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleExportPdf}
+                disabled={!canUseResumeActions || isExporting !== null}
+              >
+                <Download className="h-4 w-4" />
+                {isExporting === "pdf" ? "Exporting PDF..." : "Download PDF"}
+              </Button>
+              <Button
+                variant="accent"
+                onClick={handleExportDocx}
+                disabled={!canUseResumeActions || isExporting !== null}
+              >
+                <FileSignature className="h-4 w-4" />
+                {isExporting === "docx" ? "Exporting DOCX..." : "Download DOCX"}
+              </Button>
+            </>
+          }
+          actionStatus={{
+            isReady: canUseResumeActions,
+            readyText: "Resume is ready to generate, preview, and download.",
+            missingItems: isFormReady ? insights.blockingIssues : formMissingItems,
+          }}
           />
         </div>
+        ) : null}
 
-        <div className="min-w-0 xl:sticky xl:top-24 xl:h-fit">
-          <ResumePreview
-            data={preparedResumeData}
-            actions={
-              <>
-                <Button onClick={handleGenerate} disabled={!insights.isReady}>
-                  <WandSparkles className="h-4 w-4" />
-                  Generate Resume
-                </Button>
-                <Button variant="secondary" onClick={handlePrint} disabled={!insights.isReady}>
-                  <Printer className="h-4 w-4" />
-                  Print Resume
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleExportPdf}
-                  disabled={!insights.isReady || isExporting !== null}
-                >
-                  <Download className="h-4 w-4" />
-                  {isExporting === "pdf" ? "Exporting PDF..." : "Download PDF"}
-                </Button>
-                <Button
-                  variant="accent"
-                  onClick={handleExportDocx}
-                  disabled={!insights.isReady || isExporting !== null}
-                >
-                  <FileSignature className="h-4 w-4" />
-                  {isExporting === "docx" ? "Exporting DOCX..." : "Download DOCX"}
-                </Button>
-              </>
-            }
-          />
+        {viewMode !== "form" ? (
+        <div className="min-w-0">
+          <ResumePreview data={preparedResumeData} />
         </div>
+        ) : null}
       </section>
 
       <ResumeInsightsPanel insights={insights} />

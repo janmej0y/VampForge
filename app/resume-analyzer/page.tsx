@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BrainCircuit, Eye, ScanSearch, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ATSScore } from "./components/ATSScore";
@@ -82,6 +83,11 @@ export default function ResumeAnalyzerPage() {
       format: getFileFormat(file.name),
     });
     setAnalysisData(null);
+    showToast({
+      title: "Resume uploaded",
+      description: `${file.name} is ready for analysis.`,
+      variant: "success",
+    });
   };
 
   const handleAnalyze = () => {
@@ -93,10 +99,20 @@ export default function ResumeAnalyzerPage() {
 
     setIsAnalyzing(true);
     setAnalysisData(null);
+    showToast({
+      title: "Analysis started",
+      description: "VampForge is reviewing structure and ATS signals.",
+      variant: "info",
+    });
 
     timeoutRef.current = setTimeout(() => {
       setAnalysisData(mockAnalysisData);
       setIsAnalyzing(false);
+      showToast({
+        title: "Analysis complete",
+        description: "Your score, strengths, gaps, and suggestions are ready.",
+        variant: "success",
+      });
     }, 2000);
   };
 

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrainCircuit, Building2, Gauge, History, Mic, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { buildInterviewQuestions, getQuestionTimeLimit } from "./components/question-bank";
@@ -269,12 +270,22 @@ export default function LiveInterviewPage() {
       setPermissionStatus("granted");
       setPermissionError(null);
       setStartError(null);
+      showToast({
+        title: "Devices ready",
+        description: "Camera and microphone access is active.",
+        variant: "success",
+      });
     } catch {
       setPermissionStatus("denied");
       setPermissionError(
         "Camera and microphone access are mandatory before the room opens."
       );
       setMediaStream(null);
+      showToast({
+        title: "Device access blocked",
+        description: "Allow camera and microphone access before starting.",
+        variant: "error",
+      });
     } finally {
       setIsRequestingPermissions(false);
     }
@@ -318,6 +329,11 @@ export default function LiveInterviewPage() {
           questionTimeLimit: getQuestionTimeLimit(companySetup, totalQuestions),
           completed: false,
         });
+        showToast({
+          title: "Interview generated",
+          description: "Your local interview room is ready.",
+          variant: "success",
+        });
         return;
       }
 
@@ -341,8 +357,18 @@ export default function LiveInterviewPage() {
         questionTimeLimit: getQuestionTimeLimit(companySetup, totalQuestions),
         completed: false,
       });
+      showToast({
+        title: "Interview generated",
+        description: "Your Gemini-powered interview room is ready.",
+        variant: "success",
+      });
     } catch {
       setStartError("Interview could not start. Check setup and try again.");
+      showToast({
+        title: "Interview could not start",
+        description: "Check setup and try again.",
+        variant: "error",
+      });
     } finally {
       setIsGeneratingQuestion(false);
     }

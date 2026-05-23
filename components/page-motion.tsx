@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { pageTransition } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
 type PageMotionProps = {
@@ -71,18 +70,8 @@ export function PageMotion({ children, className }: PageMotionProps) {
   }, [pathname, reduceMotion]);
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        ref={pageRef}
-        className={cn("motion-page min-w-0", className)}
-        variants={reduceMotion ? undefined : pageTransition}
-        initial={reduceMotion ? false : "hidden"}
-        animate={reduceMotion ? { opacity: 1 } : "visible"}
-        exit={reduceMotion ? { opacity: 1 } : "exit"}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div key={pathname} ref={pageRef} className={cn("motion-page min-w-0", className)}>
+      {children}
+    </div>
   );
 }

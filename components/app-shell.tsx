@@ -5,6 +5,7 @@ import { AppThemeProvider } from "@/components/app-theme";
 import { Navbar } from "@/components/navbar";
 import { PageMotion } from "@/components/page-motion";
 import { Sidebar } from "@/components/sidebar";
+import { Toaster } from "@/components/toaster";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -87,6 +88,7 @@ export function AppShell({ children }: AppShellProps) {
             </main>
           </div>
         </div>
+        <Toaster />
       </div>
     </AppThemeProvider>
   );

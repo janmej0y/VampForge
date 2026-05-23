@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { TagInput } from "@/components/tag-input";
+import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +45,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { openGeneratedDocument } from "@/lib/export-utils";
+import { readStoredUserProfile, storeUserProfile } from "@/lib/user-profile";
 import { createResumeDocument } from "../components/document";
 import {
   exportResumeDocx,
@@ -218,6 +220,8 @@ const idleUploadStatus: UploadStatus = {
   state: "idle",
   progress: 0,
 };
+
+const AI_RESUME_AUTOSAVE_KEY = "vampforge-ai-resume-form-draft";
 
 type WizardStepId = "profile" | "target" | "experience" | "sections" | "review";
 type PreviewMode = "form" | "preview" | "score";
@@ -458,6 +462,12 @@ function UploadMeter({ status }: { status: UploadStatus }) {
       ) : null}
     </div>
   );
+}
+
+function FieldIssue({ show, children }: { show: boolean; children: React.ReactNode }) {
+  if (!show) return null;
+
+  return <p className="text-xs leading-5 text-amber-200">{children}</p>;
 }
 
 function asString(value: unknown) {
@@ -852,6 +862,7 @@ export default function AiResumeGeneratorPage() {
   const [activeStep, setActiveStep] = useState<WizardStepId>("profile");
   const [previewMode, setPreviewMode] = useState<PreviewMode>("form");
   const [versionHistory, setVersionHistory] = useState<Array<{ label: string; data: ResumeData }>>([]);
+  const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
 
   const previewData = useMemo(
     () =>
@@ -900,12 +911,112 @@ export default function AiResumeGeneratorPage() {
 
     return Math.round((required.filter(Boolean).length / required.length) * 100);
   }, [form]);
+  const formMissingItems = useMemo(() => {
+    const missing: string[] = [];
+
+    if (!form.apiKey.trim()) missing.push("Gemini API key");
+    if (!form.fullName.trim()) missing.push("Full name");
+    if (!form.targetRole.trim()) missing.push("Target role");
+    if (!form.background.trim()) missing.push("Background details");
+    if (!form.skills.length) missing.push("Skills");
+
+    return missing;
+  }, [form]);
+  const isFormReady = formMissingItems.length === 0;
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(AI_RESUME_AUTOSAVE_KEY);
+      const storedProfile = readStoredUserProfile();
+
+      if (savedDraft) {
+        setForm(JSON.parse(savedDraft) as AiResumeForm);
+        showToast({
+          title: "AI resume draft restored",
+          description: "Your last saved AI resume form was loaded.",
+          variant: "info",
+        });
+      } else if (storedProfile) {
+        setForm((current) => ({
+          ...current,
+          fullName: storedProfile.fullName || current.fullName,
+          title: storedProfile.title || current.title,
+          email: storedProfile.email || current.email,
+          phone: storedProfile.phone || current.phone,
+          location: storedProfile.location || current.location,
+          website: storedProfile.website || current.website,
+          linkedin: storedProfile.linkedin || current.linkedin,
+          github: storedProfile.github || current.github,
+        }));
+      }
+    } catch {
+      showToast({
+        title: "Could not restore AI draft",
+        description: "The saved draft was invalid, so the sample form stayed loaded.",
+        variant: "error",
+      });
+    } finally {
+      setHasHydratedDraft(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) return;
+
+    const timeout = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(AI_RESUME_AUTOSAVE_KEY, JSON.stringify(form));
+      } catch {
+        // Ignore storage failures; the editor state remains available in memory.
+      }
+    }, 450);
+
+    return () => window.clearTimeout(timeout);
+  }, [form, hasHydratedDraft]);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) return;
+
+    storeUserProfile({
+      fullName: form.fullName,
+      title: form.title,
+      email: form.email,
+      phone: form.phone,
+      location: form.location,
+      website: form.website,
+      linkedin: form.linkedin,
+      github: form.github,
+    });
+  }, [form, hasHydratedDraft]);
 
   const updateForm = <Key extends keyof AiResumeForm>(
     key: Key,
     value: AiResumeForm[Key]
   ) => {
     setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleResetForm = () => {
+    window.localStorage.removeItem(AI_RESUME_AUTOSAVE_KEY);
+    setForm(initialForm);
+    setResumeData(null);
+    setPreviousResumeData(null);
+    setError("");
+    setPreviewMode("form");
+    showToast({
+      title: "AI resume form reset",
+      description: "The default sample prompt form has been restored.",
+      variant: "success",
+    });
+  };
+
+  const handleLoadSample = () => {
+    setForm(initialForm);
+    showToast({
+      title: "Sample AI form loaded",
+      description: "Edit the sample and it will autosave.",
+      variant: "success",
+    });
   };
 
   const handlePhotoChange = async (file: File | null) => {
@@ -1039,12 +1150,25 @@ export default function AiResumeGeneratorPage() {
       setLastGeneratedAt(new Date());
       setActiveStep("review");
       setPreviewMode("score");
+      showToast({
+        title: "AI resume generated",
+        description: "Review the score panel, then preview or download.",
+        variant: "success",
+      });
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
           ? caughtError.message
           : "Something went wrong while generating the resume."
       );
+      showToast({
+        title: "AI generation failed",
+        description:
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Something went wrong while generating the resume.",
+        variant: "error",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -1053,11 +1177,21 @@ export default function AiResumeGeneratorPage() {
   const handleGenerateDocument = () => {
     if (!canExport) return;
     openGeneratedDocument(createResumeDocument(previewData));
+    showToast({
+      title: "Resume preview opened",
+      description: "Your generated AI resume opened in a new tab.",
+      variant: "success",
+    });
   };
 
   const handlePrint = () => {
     if (!canExport) return;
     printResumeDocument(previewData);
+    showToast({
+      title: "Print preview opened",
+      description: "Use your browser dialog to save or print the resume.",
+      variant: "success",
+    });
   };
 
   const handleExportPdf = async () => {
@@ -1065,6 +1199,11 @@ export default function AiResumeGeneratorPage() {
     setIsExporting("pdf");
     try {
       await exportResumePdf(previewData);
+      showToast({
+        title: "PDF downloaded",
+        description: "Your AI resume PDF export is ready.",
+        variant: "success",
+      });
     } finally {
       setIsExporting(null);
     }
@@ -1075,6 +1214,11 @@ export default function AiResumeGeneratorPage() {
     setIsExporting("docx");
     try {
       await exportResumeDocx(previewData);
+      showToast({
+        title: "DOCX downloaded",
+        description: "Your editable AI resume export is ready.",
+        variant: "success",
+      });
     } finally {
       setIsExporting(null);
     }
@@ -1157,8 +1301,8 @@ export default function AiResumeGeneratorPage() {
         }
       />
 
-      <section className="grid w-full max-w-full grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="min-w-0 bg-white/[0.045] fade-in-up xl:col-span-2">
+      <section data-motion-skip className="grid w-full max-w-full grid-cols-1 gap-6">
+        <Card className="min-w-0 bg-white/[0.045] fade-in-up">
           <CardHeader className="border-b border-white/10">
             <CardTitle className="text-white">AI Resume Template Form</CardTitle>
             <CardDescription>
@@ -1247,6 +1391,9 @@ export default function AiResumeGeneratorPage() {
                           placeholder="Paste your Gemini API key"
                           onChange={(event) => updateForm("apiKey", event.target.value)}
                         />
+                        <FieldIssue show={!form.apiKey.trim()}>
+                          Gemini API key is required for AI generation.
+                        </FieldIssue>
                         <p className="text-xs leading-5 text-slate-400">
                           Required only when the user wants Gemini to generate resume content. The normal resume builder does not need this key.
                         </p>
@@ -1267,6 +1414,16 @@ export default function AiResumeGeneratorPage() {
                             placeholder={field.placeholder}
                             onChange={(event) => updateForm(field.key, event.target.value)}
                           />
+                          <FieldIssue
+                            show={
+                              (field.key === "fullName" ||
+                                field.key === "email" ||
+                                field.key === "title") &&
+                              !form[field.key].trim()
+                            }
+                          >
+                            {field.label} is recommended for a complete resume header.
+                          </FieldIssue>
                         </div>
                       ))}
                     </div>
@@ -1363,6 +1520,9 @@ export default function AiResumeGeneratorPage() {
                         placeholder="Frontend Engineer"
                         onChange={(event) => updateForm("targetRole", event.target.value)}
                       />
+                      <FieldIssue show={!form.targetRole.trim()}>
+                        Target role is required before AI generation.
+                      </FieldIssue>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-200">Target Company</label>
@@ -1518,6 +1678,9 @@ export default function AiResumeGeneratorPage() {
                         className="min-h-[210px]"
                         onChange={(event) => updateForm("background", event.target.value)}
                       />
+                      <FieldIssue show={!form.background.trim()}>
+                        Add background details before AI generation.
+                      </FieldIssue>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-200">Target Job Description</label>
@@ -1534,6 +1697,9 @@ export default function AiResumeGeneratorPage() {
                       value={form.skills}
                       onChange={(value) => updateForm("skills", value)}
                     />
+                    <FieldIssue show={!form.skills.length}>
+                      Add at least one skill before AI generation.
+                    </FieldIssue>
                     <div className="flex flex-wrap gap-2">
                       {keywordFit.missing.slice(0, 8).map((keyword) => (
                         <span key={keyword} className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs text-amber-100">
@@ -1681,17 +1847,72 @@ export default function AiResumeGeneratorPage() {
                 </div>
               ) : null}
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Button type="button" variant="secondary" onClick={goToPreviousStep} disabled={activeStepIndex === 0}>
-                  Previous
-                </Button>
-                <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.9),rgba(10,18,35,0.72))] p-5 sm:p-6">
+                <div className="mb-5">
+                  <div className="section-label">Final Step</div>
+                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white">
+                    Generate, Preview, and Download
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Use these actions after completing the AI resume form.
+                  </p>
+                </div>
+
+                <div
+                  className={`mb-4 rounded-2xl border p-4 ${
+                    isFormReady && canExport
+                      ? "border-emerald-300/20 bg-emerald-300/10"
+                      : "border-amber-300/20 bg-amber-300/10"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {isFormReady && canExport ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                    ) : (
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+                    )}
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-white">
+                        {isFormReady && canExport
+                          ? "AI resume is ready to preview and download."
+                          : resumeData
+                            ? "Resolve quality checks before export."
+                            : "Complete these fields first."}
+                      </div>
+                      {!(isFormReady && canExport) ? (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(isFormReady && resumeData ? insights.blockingIssues : formMissingItems).map((item) => (
+                            <span
+                              key={item}
+                              className="rounded-full border border-white/10 bg-slate-950/35 px-3 py-1 text-xs text-amber-100"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="action-bar justify-start sm:justify-start">
+                  <Button type="button" variant="secondary" onClick={goToPreviousStep} disabled={activeStepIndex === 0}>
+                    Previous
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={handleLoadSample}>
+                    <Sparkles className="h-4 w-4" />
+                    Load Sample
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleResetForm}>
+                    <RotateCcw className="h-4 w-4" />
+                    Reset Form
+                  </Button>
                   {activeStep !== "review" ? (
                     <Button type="button" variant="secondary" onClick={goToNextStep}>
                       Next Step
                     </Button>
                   ) : null}
-                  <Button type="submit" size="lg" disabled={isGenerating}>
+                  <Button type="submit" size="lg" disabled={!isFormReady || isGenerating}>
                     {isGenerating ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
@@ -1699,13 +1920,39 @@ export default function AiResumeGeneratorPage() {
                     )}
                     {isGenerating ? "Generating Resume..." : "Generate AI Resume"}
                   </Button>
+                  <Button type="button" variant="secondary" onClick={handleGenerateDocument} disabled={!canExport}>
+                    <Eye className="h-4 w-4" />
+                    Preview Resume
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={handlePrint} disabled={!canExport}>
+                    <Printer className="h-4 w-4" />
+                    Print Resume
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleExportPdf}
+                    disabled={!canExport || isExporting !== null}
+                  >
+                    <Download className="h-4 w-4" />
+                    {isExporting === "pdf" ? "Exporting PDF..." : "Download PDF"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="accent"
+                    onClick={handleExportDocx}
+                    disabled={!canExport || isExporting !== null}
+                  >
+                    <FileSignature className="h-4 w-4" />
+                    {isExporting === "docx" ? "Exporting DOCX..." : "Download DOCX"}
+                  </Button>
                 </div>
               </div>
             </form>
           </CardContent>
         </Card>
 
-        <div className="min-w-0 space-y-4 xl:sticky xl:top-24 xl:h-fit">
+        <div className="min-w-0 space-y-4">
           <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-2">
             {[
               { id: "form" as const, label: "Form", icon: CircleDot },
@@ -1779,37 +2026,7 @@ export default function AiResumeGeneratorPage() {
             </Card>
           ) : null}
 
-          <ResumePreview
-            data={previewData}
-            actions={
-              <>
-                <Button onClick={handleGenerateDocument} disabled={!canExport}>
-                  <WandSparkles className="h-4 w-4" />
-                  Generate Resume
-                </Button>
-                <Button variant="secondary" onClick={handlePrint} disabled={!canExport}>
-                  <Printer className="h-4 w-4" />
-                  Print Resume
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleExportPdf}
-                  disabled={!canExport || isExporting !== null}
-                >
-                  <Download className="h-4 w-4" />
-                  {isExporting === "pdf" ? "Exporting PDF..." : "Download PDF"}
-                </Button>
-                <Button
-                  variant="accent"
-                  onClick={handleExportDocx}
-                  disabled={!canExport || isExporting !== null}
-                >
-                  <FileSignature className="h-4 w-4" />
-                  {isExporting === "docx" ? "Exporting DOCX..." : "Download DOCX"}
-                </Button>
-              </>
-            }
-          />
+          <ResumePreview data={previewData} />
         </div>
       </section>
     </div>

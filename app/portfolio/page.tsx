@@ -2,19 +2,26 @@
 
 import { useEffect, useMemo, useReducer, useState } from "react";
 import {
+  Columns3,
   Download,
   Eye,
   Headphones,
   Mail,
   Phone,
+  RotateCcw,
   Sparkles,
   WandSparkles,
   X,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { downloadTextFile, openGeneratedDocument } from "@/lib/export-utils";
+import {
+  readStoredUserProfile,
+  storeUserProfile,
+} from "@/lib/user-profile";
 import { PortfolioForm } from "./components/PortfolioForm";
 import { PortfolioPreview } from "./components/PortfolioPreview";
 import { createPortfolioDocument, createPortfolioFileName } from "./components/document";
@@ -49,6 +56,8 @@ const idleUploadStatus: UploadStatus = {
   state: "idle",
   progress: 0,
 };
+
+const PORTFOLIO_AUTOSAVE_KEY = "vampforge-portfolio-builder-draft";
 
 const initialPortfolioData: PortfolioData = {
   template: "nova",
@@ -234,7 +243,8 @@ type PortfolioAction =
   | { type: "updateSocialLink"; platform: SocialLinkKey; value: string }
   | { type: "setProfileImage"; value: string | null }
   | { type: "setProfileImagePosition"; value: number }
-  | { type: "generateSummary" | "enhanceProjects" };
+  | { type: "generateSummary" | "enhanceProjects" }
+  | { type: "loadPortfolio"; value: PortfolioData };
 
 function portfolioReducer(
   state: PortfolioData,
@@ -328,6 +338,8 @@ function portfolioReducer(
           description: enhanceProjectDescription(project),
         })),
       };
+    case "loadPortfolio":
+      return action.value;
     default:
       return state;
   }
@@ -405,6 +417,8 @@ export default function PortfolioPage() {
   const [showCustomPortfolioPopup, setShowCustomPortfolioPopup] = useState(false);
   const [profileImageUpload, setProfileImageUpload] = useState<UploadStatus>(idleUploadStatus);
   const [resumeUpload, setResumeUpload] = useState<UploadStatus>(idleUploadStatus);
+  const [hasHydratedDraft, setHasHydratedDraft] = useState(false);
+  const [viewMode, setViewMode] = useState<"both" | "form" | "preview">("both");
 
   const completion = useMemo(() => portfolioCompletion(portfolioData), [portfolioData]);
 
@@ -422,6 +436,104 @@ export default function PortfolioPage() {
     }).format(lastGeneratedAt)}`;
   }, [lastGeneratedAt]);
 
+  const formMissingItems = useMemo(() => {
+    const missing: string[] = [];
+    const hasProject = portfolioData.projects.some(
+      (project) => project.name.trim() && project.description.trim()
+    );
+
+    if (!portfolioData.name.trim()) missing.push("Full name");
+    if (!portfolioData.title.trim()) missing.push("Role");
+    if (!portfolioData.summary.trim()) missing.push("Hero summary");
+    if (!portfolioData.about.trim()) missing.push("About section");
+    if (!portfolioData.contact.email.trim()) missing.push("Email");
+    if (!portfolioData.skills.length) missing.push("Skills");
+    if (!hasProject) missing.push("At least one project");
+
+    return missing;
+  }, [portfolioData]);
+  const isFormReady = formMissingItems.length === 0;
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(PORTFOLIO_AUTOSAVE_KEY);
+      const storedProfile = readStoredUserProfile();
+
+      if (savedDraft) {
+        dispatch({
+          type: "loadPortfolio",
+          value: JSON.parse(savedDraft) as PortfolioData,
+        });
+        showToast({
+          title: "Portfolio draft restored",
+          description: "Your last saved portfolio builder draft was loaded.",
+          variant: "info",
+        });
+      } else if (storedProfile) {
+        dispatch({
+          type: "loadPortfolio",
+          value: {
+            ...initialPortfolioData,
+            name: storedProfile.fullName || initialPortfolioData.name,
+            title: storedProfile.title || initialPortfolioData.title,
+            socialLinks: {
+              ...initialPortfolioData.socialLinks,
+              github: storedProfile.github || initialPortfolioData.socialLinks.github,
+              linkedin: storedProfile.linkedin || initialPortfolioData.socialLinks.linkedin,
+            },
+            contact: {
+              ...initialPortfolioData.contact,
+              email: storedProfile.email || initialPortfolioData.contact.email,
+              phone: storedProfile.phone || initialPortfolioData.contact.phone,
+              location: storedProfile.location || initialPortfolioData.contact.location,
+              website: storedProfile.website || initialPortfolioData.contact.website,
+            },
+          },
+        });
+      }
+    } catch {
+      showToast({
+        title: "Could not restore portfolio draft",
+        description: "The saved draft was invalid, so the sample portfolio stayed loaded.",
+        variant: "error",
+      });
+    } finally {
+      setHasHydratedDraft(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) return;
+
+    const timeout = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          PORTFOLIO_AUTOSAVE_KEY,
+          JSON.stringify(portfolioData)
+        );
+      } catch {
+        // Ignore storage failures; the editor state remains available in memory.
+      }
+    }, 450);
+
+    return () => window.clearTimeout(timeout);
+  }, [hasHydratedDraft, portfolioData]);
+
+  useEffect(() => {
+    if (!hasHydratedDraft) return;
+
+    storeUserProfile({
+      fullName: portfolioData.name,
+      title: portfolioData.title,
+      email: portfolioData.contact.email,
+      phone: portfolioData.contact.phone,
+      location: portfolioData.contact.location,
+      website: portfolioData.contact.website,
+      linkedin: portfolioData.socialLinks.linkedin,
+      github: portfolioData.socialLinks.github,
+    });
+  }, [hasHydratedDraft, portfolioData]);
+
   useEffect(() => {
     const hasSeenPopup = window.sessionStorage.getItem(CUSTOM_PORTFOLIO_SESSION_KEY);
 
@@ -434,6 +546,25 @@ export default function PortfolioPage() {
   useEffect(() => {
     storePortfolioData(portfolioData);
   }, [portfolioData]);
+
+  const handleResetForm = () => {
+    window.localStorage.removeItem(PORTFOLIO_AUTOSAVE_KEY);
+    dispatch({ type: "loadPortfolio", value: initialPortfolioData });
+    showToast({
+      title: "Portfolio form reset",
+      description: "The default sample portfolio has been restored.",
+      variant: "success",
+    });
+  };
+
+  const handleLoadSample = () => {
+    dispatch({ type: "loadPortfolio", value: initialPortfolioData });
+    showToast({
+      title: "Sample portfolio loaded",
+      description: "You can edit the sample and it will autosave.",
+      variant: "success",
+    });
+  };
 
   const handleProfileImageChange = async (file: File | null) => {
     if (!file) {
@@ -467,6 +598,11 @@ export default function PortfolioPage() {
         fileName: file.name,
         message: "Profile photo uploaded.",
       });
+      showToast({
+        title: "Profile photo uploaded",
+        description: "Your portfolio image is optimized and active.",
+        variant: "success",
+      });
       window.setTimeout(() => setProfileImageUpload(idleUploadStatus), 1800);
     } catch {
       setProfileImageUpload({
@@ -474,6 +610,11 @@ export default function PortfolioPage() {
         progress: 0,
         fileName: file.name,
         message: "Photo upload failed. Try a smaller image.",
+      });
+      showToast({
+        title: "Photo upload failed",
+        description: "Try a smaller image file.",
+        variant: "error",
       });
     }
   };
@@ -509,6 +650,11 @@ export default function PortfolioPage() {
         fileName: file.name,
         message: "Resume uploaded and connected.",
       });
+      showToast({
+        title: "Resume connected",
+        description: "Portfolio resume buttons now use the uploaded file.",
+        variant: "success",
+      });
       window.setTimeout(() => setResumeUpload(idleUploadStatus), 1800);
     } catch {
       setResumeUpload({
@@ -516,6 +662,11 @@ export default function PortfolioPage() {
         progress: 0,
         fileName: file.name,
         message: "Resume upload failed. Try a smaller PDF or DOCX.",
+      });
+      showToast({
+        title: "Resume upload failed",
+        description: "Try a smaller PDF or DOCX file.",
+        variant: "error",
       });
     }
   };
@@ -634,48 +785,46 @@ export default function PortfolioPage() {
                 {generationLabel}
               </Badge>
             </div>
-            <div className="flex min-w-0 flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  openGeneratedDocument(generatedDocument);
-                  setLastGeneratedAt(new Date());
-                }}
-              >
-                <WandSparkles className="h-4 w-4" />
-                Preview
-              </Button>
-              <Button
-                onClick={() => {
-                  downloadTextFile(createPortfolioFileName(portfolioData), generatedDocument);
-                  setLastGeneratedAt(new Date());
-                }}
-              >
-                <Download className="h-4 w-4" />
-                Download
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={isExportingCode}
-                onClick={async () => {
-                  setIsExportingCode(true);
-                  try {
-                    await exportPortfolioCodeZip(portfolioData);
-                    setLastGeneratedAt(new Date());
-                  } finally {
-                    setIsExportingCode(false);
-                  }
-                }}
-              >
-                <Download className="h-4 w-4" />
-                {isExportingCode ? "Preparing..." : "Code ZIP"}
-              </Button>
-            </div>
           </div>
         }
       />
 
-      <section className="grid w-full max-w-full grid-cols-1 gap-6 xl:grid-cols-2">
+      <section className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap gap-2">
+          {[
+            { id: "both" as const, label: "Both", icon: Columns3 },
+            { id: "form" as const, label: "Form", icon: WandSparkles },
+            { id: "preview" as const, label: "Preview", icon: Eye },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Button
+                key={item.id}
+                type="button"
+                variant={viewMode === item.id ? "default" : "secondary"}
+                onClick={() => setViewMode(item.id)}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            );
+          })}
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+          <Button type="button" variant="secondary" onClick={handleLoadSample}>
+            <Sparkles className="h-4 w-4" />
+            Load Sample
+          </Button>
+          <Button type="button" variant="outline" onClick={handleResetForm}>
+            <RotateCcw className="h-4 w-4" />
+            Reset Form
+          </Button>
+        </div>
+      </section>
+
+      <section data-motion-skip className="grid w-full max-w-full grid-cols-1 gap-6">
+        {viewMode !== "preview" ? (
         <div className="min-w-0">
           <PortfolioForm
           data={portfolioData}
@@ -724,10 +873,73 @@ export default function PortfolioPage() {
           resumeUpload={resumeUpload}
           onGenerateSummary={() => dispatch({ type: "generateSummary" })}
           onEnhanceProjects={() => dispatch({ type: "enhanceProjects" })}
+          actions={
+            <>
+              <Button
+                variant="secondary"
+                disabled={!isFormReady}
+                onClick={() => {
+                  openGeneratedDocument(generatedDocument);
+                  setLastGeneratedAt(new Date());
+                  showToast({
+                    title: "Portfolio preview opened",
+                    description: "Your generated portfolio opened in a new tab.",
+                    variant: "success",
+                  });
+                }}
+              >
+                <WandSparkles className="h-4 w-4" />
+                Preview Portfolio
+              </Button>
+              <Button
+                disabled={!isFormReady}
+                onClick={() => {
+                  downloadTextFile(createPortfolioFileName(portfolioData), generatedDocument);
+                  setLastGeneratedAt(new Date());
+                  showToast({
+                    title: "HTML downloaded",
+                    description: "Your portfolio HTML export is ready.",
+                    variant: "success",
+                  });
+                }}
+              >
+                <Download className="h-4 w-4" />
+                Download HTML
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={!isFormReady || isExportingCode}
+                onClick={async () => {
+                  setIsExportingCode(true);
+                  try {
+                    await exportPortfolioCodeZip(portfolioData);
+                    setLastGeneratedAt(new Date());
+                    showToast({
+                      title: "Code ZIP downloaded",
+                      description: "Your portfolio source package is ready.",
+                      variant: "success",
+                    });
+                  } finally {
+                    setIsExportingCode(false);
+                  }
+                }}
+              >
+                <Download className="h-4 w-4" />
+                {isExportingCode ? "Preparing..." : "Download Code ZIP"}
+              </Button>
+            </>
+          }
+          actionStatus={{
+            isReady: isFormReady,
+            readyText: "Portfolio is ready to preview and download.",
+            missingItems: formMissingItems,
+          }}
           />
         </div>
+        ) : null}
 
-        <div className="min-w-0 space-y-6 xl:sticky xl:top-24 xl:h-fit">
+        {viewMode !== "form" ? (
+        <div className="min-w-0 space-y-6">
           <PortfolioPreview data={portfolioData} />
 
           <section className="relative overflow-hidden rounded-[1.8rem] border border-primary/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(8,15,30,0.88),rgba(251,191,36,0.08))] p-5 shadow-[0_24px_70px_rgba(2,6,23,0.2)]">
@@ -785,6 +997,7 @@ export default function PortfolioPage() {
             </div>
           </section>
         </div>
+        ) : null}
       </section>
     </div>
   );

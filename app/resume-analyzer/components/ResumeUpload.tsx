@@ -116,6 +116,34 @@ export function ResumeUpload({
           </div>
         ) : null}
 
+        <div
+          className={`rounded-2xl border p-4 ${
+            file
+              ? "border-emerald-300/20 bg-emerald-300/10"
+              : "border-amber-300/20 bg-amber-300/10"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <FileBadge2
+              className={`mt-0.5 h-4 w-4 shrink-0 ${
+                file ? "text-emerald-300" : "text-amber-200"
+              }`}
+            />
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-white">
+                {file ? "Resume is ready to analyze." : "Upload a resume first."}
+              </div>
+              {!file ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-white/10 bg-slate-950/35 px-3 py-1 text-xs text-amber-100">
+                    PDF or DOCX file
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
         <Button
           type="button"
           size="lg"
