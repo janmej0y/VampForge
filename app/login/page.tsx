@@ -1,26 +1,67 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getFirebaseClientConfig, getGoogleClientId } from "@/lib/firebase-client";
+import { getFirebaseClientConfig } from "@/lib/firebase-client";
+import {
+  completeFirebaseEmailSignIn,
+  isFirebaseEmailSignInLink,
+  sendFirebaseEmailSignInLink,
+  signInWithFirebaseGoogle,
+} from "@/lib/firebase-auth";
 
 type LoginStep = "email" | "otp" | "ready";
 
 export default function LoginPage() {
   const firebaseConfig = useMemo(() => getFirebaseClientConfig(), []);
-  const googleClientId = useMemo(() => getGoogleClientId(), []);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<LoginStep>("email");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const configReady = Boolean(firebaseConfig);
 
-  const handleEmailContinue = () => {
+  useEffect(() => {
+    if (!configReady || typeof window === "undefined") {
+      return;
+    }
+
+    const currentUrl = window.location.href;
+
+    if (!isFirebaseEmailSignInLink(currentUrl)) {
+      return;
+    }
+
+    const storedEmail = window.localStorage.getItem("vampforgeEmailForSignIn") ?? "";
+
+    if (!storedEmail) {
+      setMessage("Enter the email you used so Firebase can complete sign-in.");
+      setStep("otp");
+      return;
+    }
+
+    setLoading(true);
+    completeFirebaseEmailSignIn(currentUrl, storedEmail)
+      .then(() => {
+        window.localStorage.removeItem("vampforgeEmailForSignIn");
+        setEmail(storedEmail);
+        setStep("ready");
+        setMessage("Firebase sign-in complete.");
+      })
+      .catch((error: unknown) => {
+        const detail = error instanceof Error ? error.message : "Try requesting a new sign-in link.";
+        setMessage(`Firebase sign-in failed. ${detail}`);
+        setStep("email");
+      })
+      .finally(() => setLoading(false));
+  }, [configReady]);
+
+  const handleEmailContinue = async () => {
     if (!email.trim() || !email.includes("@")) {
       setMessage("Enter a valid email to continue.");
       return;
@@ -32,30 +73,69 @@ export default function LoginPage() {
       return;
     }
 
-    setMessage("OTP request is ready for Firebase Auth wiring. Add Firebase SDK or backend endpoint to send the real code.");
-    setStep("otp");
+    setLoading(true);
+
+    try {
+      await sendFirebaseEmailSignInLink(email.trim());
+      setMessage("Firebase sent a secure sign-in link to your email.");
+      setStep("otp");
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : "Check Firebase Auth settings and try again.";
+      setMessage(`Could not send Firebase sign-in link. ${detail}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVerifyOtp = () => {
-    if (otp.trim().length < 4) {
-      setMessage("Enter the OTP code from your email.");
+  const handleVerifyOtp = async () => {
+    if (!configReady) {
+      setMessage("Firebase config is missing. Add the NEXT_PUBLIC_FIREBASE_* values to enable live sign-in.");
       return;
     }
 
-    setMessage("Login verified locally. Connect Firebase Auth to create the real session.");
-    setStep("ready");
-  };
-
-  const handleGoogleLogin = () => {
-    if (!googleClientId || !firebaseConfig) {
-      setMessage("Add Firebase config and NEXT_PUBLIC_GOOGLE_CLIENT_ID before enabling Google login.");
+    if (!email.trim() || !email.includes("@")) {
+      setMessage("Enter the email you used before opening the Firebase sign-in link.");
       return;
     }
 
-    const redirectUri = encodeURIComponent(`${window.location.origin}/login`);
-    const scope = encodeURIComponent("openid email profile");
-    window.location.href =
-      `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&prompt=select_account`;
+    if (typeof window === "undefined" || !isFirebaseEmailSignInLink(window.location.href)) {
+      setMessage("Open the Firebase sign-in link from your email to finish login.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await completeFirebaseEmailSignIn(window.location.href, email.trim());
+      window.localStorage.removeItem("vampforgeEmailForSignIn");
+      setMessage("Firebase sign-in complete.");
+      setStep("ready");
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : "Request a fresh sign-in link and try again.";
+      setMessage(`Firebase sign-in failed. ${detail}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (!firebaseConfig) {
+      setMessage("Add Firebase config before enabling Google login.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await signInWithFirebaseGoogle();
+      setMessage("Google sign-in complete.");
+      setStep("ready");
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : "Check that Google is enabled in Firebase Auth.";
+      setMessage(`Google sign-in failed. ${detail}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,7 +149,11 @@ export default function LoginPage() {
           <Link href="/">
             <BrandLockup subtitle="Secure workspace access" />
           </Link>
-          <Button asChild variant="secondary">
+          <Button
+            asChild
+            variant="secondary"
+            className="border-sky-200 bg-white/85 text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.08)] hover:border-sky-300 hover:bg-white hover:text-slate-950"
+          >
             <Link href="/">
               Back Home
             </Link>
@@ -105,7 +189,7 @@ export default function LoginPage() {
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Sign in</h2>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Use email OTP or Google.
+                  Use an email sign-in link or Google.
                 </p>
               </div>
             </div>
@@ -127,21 +211,20 @@ export default function LoginPage() {
                   <Input
                     value={otp}
                     onChange={(event) => setOtp(event.target.value)}
-                    placeholder="123456"
-                    inputMode="numeric"
+                    placeholder="Open the email link to finish"
                   />
                 </div>
               ) : null}
 
               {step === "email" ? (
-                <Button className="w-full" onClick={handleEmailContinue}>
+                <Button className="w-full" onClick={handleEmailContinue} disabled={loading}>
                   <Mail className="h-4 w-4" />
-                  Send Email OTP
+                  Send Sign-In Link
                 </Button>
               ) : step === "otp" ? (
-                <Button className="w-full" onClick={handleVerifyOtp}>
+                <Button className="w-full" onClick={handleVerifyOtp} disabled={loading}>
                   <CheckCircle2 className="h-4 w-4" />
-                  Verify OTP
+                  Complete Sign-In
                 </Button>
               ) : (
                 <Button asChild className="w-full">
@@ -152,7 +235,12 @@ export default function LoginPage() {
                 </Button>
               )}
 
-              <Button variant="secondary" className="w-full" onClick={handleGoogleLogin}>
+              <Button
+                variant="secondary"
+                className="w-full border-sky-200 bg-white/90 text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.08)] hover:border-sky-300 hover:bg-white hover:text-slate-950"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+              >
                 Continue with Google
               </Button>
 
@@ -162,8 +250,8 @@ export default function LoginPage() {
                 </div>
               ) : null}
 
-              <div className="rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-xs leading-5 text-slate-500">
-                Firebase-ready UI. Connect Auth to create real sessions.
+              <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-xs font-medium leading-5 text-slate-700">
+                Firebase Auth creates the live session after the email link or Google popup succeeds.
               </div>
             </div>
           </div>
