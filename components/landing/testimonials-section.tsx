@@ -47,7 +47,7 @@ const testimonials = [
   {
     name: "Kunal D.",
     role: "React Developer",
-    location: "Kolkata",
+    location: "Delhi",
     quote:
       "The UI feels premium, but the best part is speed. I could polish my developer profile without opening five different tools.",
     initials: "KD",

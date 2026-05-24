@@ -390,7 +390,7 @@ export function PortfolioForm({
               <label className="text-sm font-medium text-slate-200">Full Name</label>
               <Input
                 value={data.name}
-                placeholder="Janmejoy Mahato"
+                placeholder="Your full name"
                 onChange={(event) => onFieldChange("name", event.target.value)}
               />
               <FieldIssue show={!data.name.trim()}>
@@ -525,7 +525,7 @@ export function PortfolioForm({
                 <label className="text-sm font-medium text-slate-200">Email</label>
                 <Input
                   value={data.contact.email}
-                  placeholder="janmejoymahato529@gmail.com"
+                  placeholder="you@example.com"
                   onChange={(event) => onContactChange("email", event.target.value)}
                 />
                 <FieldIssue show={!data.contact.email.trim()}>
@@ -536,7 +536,7 @@ export function PortfolioForm({
                 <label className="text-sm font-medium text-slate-200">Phone</label>
                 <Input
                   value={data.contact.phone}
-                  placeholder="+91 7477661933"
+                  placeholder="+1 555 000 0000"
                   onChange={(event) => onContactChange("phone", event.target.value)}
                 />
               </div>
@@ -544,7 +544,7 @@ export function PortfolioForm({
                 <label className="text-sm font-medium text-slate-200">Location</label>
                 <Input
                   value={data.contact.location}
-                  placeholder="Kolkata, India"
+                  placeholder="City, Country"
                   onChange={(event) => onContactChange("location", event.target.value)}
                 />
               </div>
@@ -552,7 +552,7 @@ export function PortfolioForm({
                 <label className="text-sm font-medium text-slate-200">Website</label>
                 <Input
                   value={data.contact.website}
-                  placeholder="https://janmejoy.is-a.dev"
+                  placeholder="https://yourportfolio.com"
                   onChange={(event) => onContactChange("website", event.target.value)}
                 />
               </div>
@@ -562,7 +562,7 @@ export function PortfolioForm({
                 </label>
                 <Input
                   value={data.contact.resumeLink}
-                  placeholder="https://janmejoy.is-a.dev"
+                  placeholder="https://your-resume-link.com"
                   onChange={(event) => onContactChange("resumeLink", event.target.value)}
                 />
               </div>

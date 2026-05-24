@@ -6,10 +6,10 @@ import { Terminal } from "lucide-react";
 
 const lines = [
   "boot vampforge.kernel --cinematic",
-  "auth session: Janmejoy",
+  "auth session: developer",
   "scan portfolio_signal --depth recruiter",
   "resume.a4.render() => ready",
-  "welcome, Janmejoy Mahato",
+  "welcome, future builder",
 ];
 
 export function TerminalGreeting() {

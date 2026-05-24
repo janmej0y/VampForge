@@ -71,7 +71,7 @@ function ResumeDemo() {
 
       <div className="rounded-[1.6rem] bg-white p-6 text-slate-950 shadow-[0_30px_90px_rgba(2,8,23,0.35)]">
         <div className="border-b border-slate-200 pb-4">
-          <div className="text-2xl font-bold tracking-[-0.04em]">Janmejoy Mahato</div>
+          <div className="text-2xl font-bold tracking-[-0.04em]">Your Name</div>
           <div className="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
             Web Developer
           </div>

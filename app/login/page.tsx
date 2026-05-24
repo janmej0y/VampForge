@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,12 @@ import {
   sendFirebaseEmailSignInLink,
   signInWithFirebaseGoogle,
 } from "@/lib/firebase-auth";
+import { storeAuthenticatedUser } from "@/lib/user-profile";
 
 type LoginStep = "email" | "otp" | "ready";
 
 export default function LoginPage() {
+  const router = useRouter();
   const firebaseConfig = useMemo(() => getFirebaseClientConfig(), []);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -47,11 +50,17 @@ export default function LoginPage() {
 
     setLoading(true);
     completeFirebaseEmailSignIn(currentUrl, storedEmail)
-      .then(() => {
+      .then((credential) => {
+        const signedInEmail = credential.user.email || storedEmail;
         window.localStorage.removeItem("vampforgeEmailForSignIn");
-        setEmail(storedEmail);
+        storeAuthenticatedUser({
+          email: signedInEmail,
+          displayName: credential.user.displayName || undefined,
+        });
+        setEmail(signedInEmail);
         setStep("ready");
         setMessage("Firebase sign-in complete.");
+        router.replace("/dashboard");
       })
       .catch((error: unknown) => {
         const detail = error instanceof Error ? error.message : "Try requesting a new sign-in link.";
@@ -59,7 +68,7 @@ export default function LoginPage() {
         setStep("email");
       })
       .finally(() => setLoading(false));
-  }, [configReady]);
+  }, [configReady, router]);
 
   const handleEmailContinue = async () => {
     if (!email.trim() || !email.includes("@")) {
@@ -106,10 +115,15 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await completeFirebaseEmailSignIn(window.location.href, email.trim());
+      const credential = await completeFirebaseEmailSignIn(window.location.href, email.trim());
       window.localStorage.removeItem("vampforgeEmailForSignIn");
+      storeAuthenticatedUser({
+        email: credential.user.email || email.trim(),
+        displayName: credential.user.displayName || undefined,
+      });
       setMessage("Firebase sign-in complete.");
       setStep("ready");
+      router.replace("/dashboard");
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : "Request a fresh sign-in link and try again.";
       setMessage(`Firebase sign-in failed. ${detail}`);
@@ -127,9 +141,16 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithFirebaseGoogle();
+      const credential = await signInWithFirebaseGoogle();
+      if (credential.user.email) {
+        storeAuthenticatedUser({
+          email: credential.user.email,
+          displayName: credential.user.displayName || undefined,
+        });
+      }
       setMessage("Google sign-in complete.");
       setStep("ready");
+      router.replace("/dashboard");
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : "Check that Google is enabled in Firebase Auth.";
       setMessage(`Google sign-in failed. ${detail}`);

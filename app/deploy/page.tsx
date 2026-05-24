@@ -63,39 +63,17 @@ const deploymentSteps: DeploymentStep[] = [
 
 const initialFormData: DeploymentFormData = {
   templateName: "Modern Template",
-  portfolioName: "Janmejoy Portfolio",
-  lastUpdated: "Today, 9:42 PM",
-  subdomain: "janmejoy",
-  customDomain: "janmejoy.is-a.dev",
-  githubRepoName: "janmejoy-portfolio",
+  portfolioName: "",
+  lastUpdated: "Not published yet",
+  subdomain: "",
+  customDomain: "",
+  githubRepoName: "",
   githubConnected: false,
   githubUsername: "",
   environment: "production",
 };
 
-const initialHistory: DeploymentHistoryItem[] = [
-  {
-    id: "history-1",
-    date: "Today",
-    status: "Pushed",
-    url: "github.com/janmej0y/My-Portfolio",
-    environment: "production",
-  },
-  {
-    id: "history-2",
-    date: "Yesterday",
-    status: "Preview",
-    url: "github.com/janmej0y/RentHub",
-    environment: "preview",
-  },
-  {
-    id: "history-3",
-    date: "Apr 07, 2026",
-    status: "Pushed",
-    url: "github.com/janmej0y/Online-Voting-System",
-    environment: "production",
-  },
-];
+const initialHistory: DeploymentHistoryItem[] = [];
 
 export default function DeployPage() {
   const [formData, setFormData] = useState<DeploymentFormData>(initialFormData);

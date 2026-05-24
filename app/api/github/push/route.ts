@@ -95,8 +95,8 @@ function createStarterFiles(
   body: Required<Omit<PushRequestBody, "files">>,
   owner: string
 ) {
-  const title = body.portfolioName || "Janmejoy Portfolio";
-  const domain = body.customDomain || "janmejoy.is-a.dev";
+  const title = body.portfolioName || "My Developer Portfolio";
+  const domain = body.customDomain || "your-domain.com";
   const mode = body.environment === "production" ? "Production" : "Preview";
 
   return [
@@ -192,9 +192,9 @@ export async function POST(request: NextRequest) {
     ? files
     : createStarterFiles(
         {
-          portfolioName: body.portfolioName || "Janmejoy Portfolio",
+          portfolioName: body.portfolioName || "My Developer Portfolio",
           repoName,
-          customDomain: body.customDomain || "janmejoy.is-a.dev",
+          customDomain: body.customDomain || "your-domain.com",
           environment: body.environment || "production",
         },
         user.login

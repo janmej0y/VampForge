@@ -45,7 +45,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { openGeneratedDocument } from "@/lib/export-utils";
-import { readStoredUserProfile, storeUserProfile } from "@/lib/user-profile";
+import { storeUserProfile } from "@/lib/user-profile";
 import { createResumeDocument } from "../components/document";
 import {
   exportResumeDocx,
@@ -160,51 +160,25 @@ const emptyResumeData: ResumeData = {
 const initialForm: AiResumeForm = {
   apiKey: "",
   model: "gemini-2.5-flash",
-  fullName: "Janmejoy Mahato",
-  title: "Web Developer",
-  email: "janmejoymahato529@gmail.com",
-  phone: "+91 7477661933",
-  location: "Kolkata, India",
-  website: "https://janmejoy.is-a.dev",
-  linkedin: "https://linkedin.com/in/janmejoy",
-  github: "https://github.com/janmej0y",
-  targetRole: "Full Stack Web Developer",
+  fullName: "",
+  title: "",
+  email: "",
+  phone: "",
+  location: "",
+  website: "",
+  linkedin: "",
+  github: "",
+  targetRole: "",
   targetCompany: "",
-  targetIndustry: "Web Development",
+  targetIndustry: "",
   tone: "Professional",
   experienceLevel: "Entry-level",
   jobDescription: "",
-  background:
-    "Final-year B.Tech CSE student with hands-on experience in full-stack web development, authentication, databases, dashboards, AI integrations, and deployment-ready web applications.",
-  skills: [
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Tailwind CSS",
-    "Node.js",
-    "Express.js",
-    "MongoDB",
-    "MySQL",
-    "Supabase",
-    "Python",
-    "Redis",
-    "Git",
-  ],
-  education:
-    "B.Tech in Computer Science and Engineering, Greater Kolkata College of Engineering & Management, 2022-2026, CGPA 7.20/10. Higher Secondary - WBCHSE, 85.60%. Secondary - WBBSE, 69.70%.",
-  projects:
-    "Online Voting System: full-stack voting app with Node.js, Express, SQLite, JWT, bcrypt, Tailwind CSS, single-vote validation, and real-time results. RentHub: rental platform using Next.js, TypeScript, Tailwind CSS, and Supabase for auth, storage, and listing management. Kurmi Chatbot: AI chatbot with Next.js, NextAuth, MongoDB, Markdown, and Gemini API.",
-  certifications: [
-    "Cybersecurity Virtual Internship",
-    "Full Stack BCT Training",
-    "Ethical Hacking Internship",
-    "Cloud Security",
-    "Java Full Stack",
-    "Cloud Foundation",
-  ],
+  background: "",
+  skills: [],
+  education: "",
+  projects: "",
+  certifications: [],
   template: "professional",
   pageCount: 1,
   strictOnePage: true,
@@ -221,7 +195,7 @@ const idleUploadStatus: UploadStatus = {
   progress: 0,
 };
 
-const AI_RESUME_AUTOSAVE_KEY = "vampforge-ai-resume-form-draft";
+const AI_RESUME_AUTOSAVE_KEY = "vampforge-ai-resume-form-draft-v2";
 
 type WizardStepId = "profile" | "target" | "experience" | "sections" | "review";
 type PreviewMode = "form" | "preview" | "score";
@@ -329,14 +303,14 @@ const personalFields: Array<{
   label: string;
   placeholder: string;
 }> = [
-  { key: "fullName", label: "Full Name", placeholder: "Janmejoy Mahato" },
+  { key: "fullName", label: "Full Name", placeholder: "Your full name" },
   { key: "title", label: "Current Title", placeholder: "Frontend Developer" },
-  { key: "email", label: "Email", placeholder: "janmejoy@email.com" },
-  { key: "phone", label: "Phone", placeholder: "+91 7477661933" },
-  { key: "location", label: "Location", placeholder: "Kolkata, India" },
-  { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.is-a.dev" },
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/janmejoy" },
-  { key: "github", label: "GitHub", placeholder: "https://github.com/janmej0y" },
+  { key: "email", label: "Email", placeholder: "you@example.com" },
+  { key: "phone", label: "Phone", placeholder: "+1 555 000 0000" },
+  { key: "location", label: "Location", placeholder: "City, Country" },
+  { key: "website", label: "Portfolio / Website", placeholder: "https://yourportfolio.com" },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username" },
+  { key: "github", label: "GitHub", placeholder: "https://github.com/username" },
 ];
 
 function FormSection({
@@ -927,8 +901,6 @@ export default function AiResumeGeneratorPage() {
   useEffect(() => {
     try {
       const savedDraft = window.localStorage.getItem(AI_RESUME_AUTOSAVE_KEY);
-      const storedProfile = readStoredUserProfile();
-
       if (savedDraft) {
         setForm(JSON.parse(savedDraft) as AiResumeForm);
         showToast({
@@ -936,23 +908,11 @@ export default function AiResumeGeneratorPage() {
           description: "Your last saved AI resume form was loaded.",
           variant: "info",
         });
-      } else if (storedProfile) {
-        setForm((current) => ({
-          ...current,
-          fullName: storedProfile.fullName || current.fullName,
-          title: storedProfile.title || current.title,
-          email: storedProfile.email || current.email,
-          phone: storedProfile.phone || current.phone,
-          location: storedProfile.location || current.location,
-          website: storedProfile.website || current.website,
-          linkedin: storedProfile.linkedin || current.linkedin,
-          github: storedProfile.github || current.github,
-        }));
       }
     } catch {
       showToast({
         title: "Could not restore AI draft",
-        description: "The saved draft was invalid, so the sample form stayed loaded.",
+        description: "The saved draft was invalid, so a blank guided form stayed loaded.",
         variant: "error",
       });
     } finally {
@@ -1005,7 +965,7 @@ export default function AiResumeGeneratorPage() {
     setPreviewMode("form");
     showToast({
       title: "AI resume form reset",
-      description: "The default sample prompt form has been restored.",
+      description: "A blank guided AI resume form is ready.",
       variant: "success",
     });
   };
@@ -1013,8 +973,8 @@ export default function AiResumeGeneratorPage() {
   const handleLoadSample = () => {
     setForm(initialForm);
     showToast({
-      title: "Sample AI form loaded",
-      description: "Edit the sample and it will autosave.",
+      title: "Blank AI form loaded",
+      description: "Use the placeholders to add only your own details.",
       variant: "success",
     });
   };

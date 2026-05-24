@@ -18,10 +18,7 @@ import { showToast } from "@/components/toaster";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { downloadTextFile, openGeneratedDocument } from "@/lib/export-utils";
-import {
-  readStoredUserProfile,
-  storeUserProfile,
-} from "@/lib/user-profile";
+import { storeUserProfile } from "@/lib/user-profile";
 import { PortfolioForm } from "./components/PortfolioForm";
 import { PortfolioPreview } from "./components/PortfolioPreview";
 import { createPortfolioDocument, createPortfolioFileName } from "./components/document";
@@ -46,8 +43,8 @@ import {
   type UploadStatus,
 } from "./components/types";
 
-const CUSTOM_PORTFOLIO_EMAIL = "janmejoymahato529@gmail.com";
-const CUSTOM_PORTFOLIO_PHONE = "7477661933";
+const CUSTOM_PORTFOLIO_EMAIL = "support@example.com";
+const CUSTOM_PORTFOLIO_PHONE = "+1 555 000 0000";
 const CUSTOM_PORTFOLIO_MAILTO = `mailto:${CUSTOM_PORTFOLIO_EMAIL}?subject=Custom Portfolio Request`;
 const CUSTOM_PORTFOLIO_TEL = `tel:${CUSTOM_PORTFOLIO_PHONE}`;
 const CUSTOM_PORTFOLIO_SESSION_KEY = "vampforge-portfolio-custom-popup-seen";
@@ -57,140 +54,34 @@ const idleUploadStatus: UploadStatus = {
   progress: 0,
 };
 
-const PORTFOLIO_AUTOSAVE_KEY = "vampforge-portfolio-builder-draft";
+const PORTFOLIO_AUTOSAVE_KEY = "vampforge-portfolio-builder-draft-v2";
 
 const initialPortfolioData: PortfolioData = {
   template: "nova",
-  name: "Janmejoy Mahato",
-  title: "Web Developer",
-  summary:
-    "Final-year B.Tech CSE student building full-stack web apps with React, Next.js, Node.js, Express, Supabase, MongoDB, and clean product-focused UI.",
-  about:
-    "I build practical web products with authentication, databases, dashboards, AI features, and polished frontend flows. I care about clear UX, secure code, and shipping projects that feel complete.",
-  experienceSummary:
-    "Hands-on project experience across voting systems, rental platforms, AI chatbots, portfolio websites, and Python automation.",
-  careerGoals:
-    "I want to grow as a product-minded full-stack developer and contribute to agile teams that build secure, scalable applications.",
-  techFocus:
-    "Currently focused on Next.js, TypeScript, Firebase, Supabase, MongoDB, secure authentication, AI-assisted products, and premium portfolio systems.",
-  clientCount: "5+",
-  skills: [
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Tailwind CSS",
-    "Node.js",
-    "Express.js",
-    "MongoDB",
-    "MySQL",
-    "Supabase",
-    "Python",
-    "Redis",
-    "Git",
-  ],
-  projects: [
-    {
-      ...createProject(),
-      name: "Online Voting System",
-      description:
-        "Full-stack voting app with secure authentication, single-vote validation, real-time result flow, and a clean voter experience.",
-      techStack: ["Node.js", "Express", "SQLite", "JWT", "bcrypt", "Tailwind CSS"],
-      githubLink: "https://github.com/janmej0y/Online-Voting-System",
-      liveLink: "https://online-voting-system-henna.vercel.app",
-      imageUrl:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-      ...createProject(),
-      name: "RentHub",
-      description:
-        "Rental platform built with Next.js, TypeScript, Tailwind CSS, and Supabase for authentication, storage, and listing management.",
-      techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase"],
-      githubLink: "https://github.com/janmej0y/RentHub",
-      liveLink: "https://rent-hub-two.vercel.app",
-      imageUrl:
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-      ...createProject(),
-      name: "Kurmi Chatbot",
-      description:
-        "AI chatbot built with Next.js, NextAuth, MongoDB, Markdown support, and Gemini API integration with secure authentication.",
-      techStack: ["Next.js", "MongoDB", "NextAuth", "Gemini API", "Markdown"],
-      githubLink: "https://github.com/janmej0y/Baklol-Chatbot",
-      liveLink: "https://baklol-chatbot.vercel.app",
-      imageUrl:
-        "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
-    },
-  ],
-  experience: [
-    {
-      ...createExperienceItem(),
-      company: "Personal and Academic Projects",
-      role: "Full Stack Web Developer",
-      duration: "2023 - Present",
-      description:
-        "Built full-stack applications with authentication, dashboards, databases, and deployment workflows.\nWorked with React, Next.js, Node.js, Express, Supabase, MongoDB, and Firebase-ready architecture.\nPracticed secure coding, data structures, and clean product presentation.",
-    },
-    {
-      ...createExperienceItem(),
-      company: "Self-Learning and Training",
-      role: "Web Development Trainee",
-      duration: "2022 - Present",
-      description:
-        "Completed training across full-stack development, cybersecurity, cloud foundations, and ethical hacking.\nBuilt projects independently while improving problem-solving, Git workflow, and deployment skills.",
-    },
-  ],
-  education: [
-    {
-      ...createEducationItem(),
-      institution: "Greater Kolkata College of Engineering & Management",
-      degree: "B.Tech in Computer Science and Engineering",
-      year: "2022 - 2026",
-      grade: "CGPA: 7.20/10",
-    },
-    {
-      ...createEducationItem(),
-      institution: "R.B.B. High (H.S) School",
-      degree: "Higher Secondary - WBCHSE",
-      year: "2021 - 2022",
-      grade: "85.60%",
-    },
-  ],
-  achievements: [
-    {
-      ...createAchievementItem(),
-      title: "Cybersecurity Virtual Internship",
-      category: "Certification",
-      description: "Completed cybersecurity-focused virtual internship training.",
-    },
-    {
-      ...createAchievementItem(),
-      title: "Java Full Stack",
-      category: "Certification",
-      description: "Completed Java full-stack training with backend and application fundamentals.",
-    },
-    {
-      ...createAchievementItem(),
-      title: "Cloud Foundation",
-      category: "Certification",
-      description: "Completed foundational cloud training for modern application delivery.",
-    },
-  ],
+  name: "",
+  title: "",
+  summary: "",
+  about: "",
+  experienceSummary: "",
+  careerGoals: "",
+  techFocus: "",
+  clientCount: "",
+  skills: [],
+  projects: [],
+  experience: [],
+  education: [],
+  achievements: [],
   socialLinks: {
-    github: "https://github.com/janmej0y",
-    linkedin: "https://linkedin.com/in/janmejoy",
+    github: "",
+    linkedin: "",
     twitter: "",
   },
   contact: {
-    email: "janmejoymahato529@gmail.com",
-    phone: "+91 7477661933",
-    location: "Kolkata, India",
-    website: "https://janmejoy.is-a.dev",
-    resumeLink: "https://janmejoy.is-a.dev",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    resumeLink: "",
   },
   profileImage: null,
   profileImagePosition: 18,
@@ -457,8 +348,6 @@ export default function PortfolioPage() {
   useEffect(() => {
     try {
       const savedDraft = window.localStorage.getItem(PORTFOLIO_AUTOSAVE_KEY);
-      const storedProfile = readStoredUserProfile();
-
       if (savedDraft) {
         dispatch({
           type: "loadPortfolio",
@@ -469,32 +358,11 @@ export default function PortfolioPage() {
           description: "Your last saved portfolio builder draft was loaded.",
           variant: "info",
         });
-      } else if (storedProfile) {
-        dispatch({
-          type: "loadPortfolio",
-          value: {
-            ...initialPortfolioData,
-            name: storedProfile.fullName || initialPortfolioData.name,
-            title: storedProfile.title || initialPortfolioData.title,
-            socialLinks: {
-              ...initialPortfolioData.socialLinks,
-              github: storedProfile.github || initialPortfolioData.socialLinks.github,
-              linkedin: storedProfile.linkedin || initialPortfolioData.socialLinks.linkedin,
-            },
-            contact: {
-              ...initialPortfolioData.contact,
-              email: storedProfile.email || initialPortfolioData.contact.email,
-              phone: storedProfile.phone || initialPortfolioData.contact.phone,
-              location: storedProfile.location || initialPortfolioData.contact.location,
-              website: storedProfile.website || initialPortfolioData.contact.website,
-            },
-          },
-        });
       }
     } catch {
       showToast({
         title: "Could not restore portfolio draft",
-        description: "The saved draft was invalid, so the sample portfolio stayed loaded.",
+        description: "The saved draft was invalid, so a blank portfolio form stayed loaded.",
         variant: "error",
       });
     } finally {
@@ -552,7 +420,7 @@ export default function PortfolioPage() {
     dispatch({ type: "loadPortfolio", value: initialPortfolioData });
     showToast({
       title: "Portfolio form reset",
-      description: "The default sample portfolio has been restored.",
+      description: "A blank guided portfolio form is ready.",
       variant: "success",
     });
   };
@@ -560,8 +428,8 @@ export default function PortfolioPage() {
   const handleLoadSample = () => {
     dispatch({ type: "loadPortfolio", value: initialPortfolioData });
     showToast({
-      title: "Sample portfolio loaded",
-      description: "You can edit the sample and it will autosave.",
+      title: "Blank portfolio loaded",
+      description: "Use the section guides and placeholders to add your own details.",
       variant: "success",
     });
   };
@@ -692,7 +560,7 @@ export default function PortfolioPage() {
                       Want a custom portfolio?
                     </h2>
                     <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-                      Contact Janmejoy for a tailored premium portfolio build.
+                      Contact the portfolio support team for a tailored premium build.
                     </p>
                   </div>
                 </div>

@@ -190,7 +190,7 @@ export function DeployCard({
               </label>
               <Input
                 value={formData.portfolioName}
-                placeholder="Janmejoy Portfolio"
+                placeholder="My Developer Portfolio"
                 onChange={(event) =>
                   onFieldChange("portfolioName", event.target.value)
                 }
@@ -220,7 +220,7 @@ export function DeployCard({
                   <Input
                     className="pl-10"
                     value={formData.customDomain}
-                    placeholder="janmejoy.is-a.dev"
+                    placeholder="your-domain.com"
                     onChange={(event) =>
                       onFieldChange("customDomain", event.target.value)
                     }

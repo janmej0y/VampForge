@@ -20,10 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { openGeneratedDocument } from "@/lib/export-utils";
-import {
-  readStoredUserProfile,
-  storeUserProfile,
-} from "@/lib/user-profile";
+import { storeUserProfile } from "@/lib/user-profile";
 import { ResumeForm } from "./components/ResumeForm";
 import { ResumeInsightsPanel } from "./components/ResumeInsightsPanel";
 import { ResumePreview } from "./components/ResumePreview";
@@ -57,115 +54,22 @@ import {
 
 const initialResumeData: ResumeData = {
   personalInfo: {
-    fullName: "Janmejoy Mahato",
-    title: "Full Stack Web Developer",
-    email: "janmejoymahato529@gmail.com",
-    phone: "+91 7477661933",
-    location: "West Bengal, India",
-    website: "https://janmejoy.is-a.dev",
-    linkedin: "https://linkedin.com/in/janmejoy",
-    github: "https://github.com/janmej0y",
+    fullName: "",
+    title: "",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    linkedin: "",
+    github: "",
   },
-  summary:
-    "Final-year B.Tech CSE student with hands-on full-stack web development experience.\nSkilled in React, Next.js, Node.js, Express, Supabase, MongoDB, Python, Redis, and secure authentication.\nQuick learner focused on clean UI, scalable products, and agile team contribution.",
-  skills: [
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Tailwind CSS",
-    "Node.js",
-    "Express.js",
-    "MongoDB",
-    "MySQL",
-    "Supabase",
-    "Python",
-    "Redis",
-    "Git",
-    "Firebase Studio",
-  ],
-  experience: [
-    {
-      ...createExperienceItem(),
-      companyName: "Personal and Academic Projects",
-      role: "Full Stack Web Developer",
-      duration: "2023 - Present",
-      description:
-        "Built full-stack applications with authentication, databases, dashboards, and deployment-ready frontend flows\nImplemented projects using React, Next.js, Node.js, Express, Supabase, MongoDB, and Firebase-ready architecture\nPracticed secure coding, clean UI structure, Git workflow, and responsive design",
-    },
-    {
-      ...createExperienceItem(),
-      companyName: "Self-Learning and Technical Training",
-      role: "Web Development Trainee",
-      duration: "2022 - Present",
-      description:
-        "Completed training across full-stack development, cybersecurity, ethical hacking, and cloud foundations\nStrengthened core CS concepts including data structures, backend APIs, authentication, and database integration",
-    },
-  ],
-  education: [
-    {
-      ...createEducationItem(),
-      institutionName: "Greater Kolkata College of Engineering & Management",
-      degree: "Bachelor of Technology in Computer Science and Engineering",
-      year: "2022 - 2026",
-      description:
-        "CGPA: 7.20/10. Focused on software engineering, data structures, web development, and practical product building.",
-    },
-    {
-      ...createEducationItem(),
-      institutionName: "R.B.B. High (H.S) School",
-      degree: "Higher Secondary - WBCHSE",
-      year: "2021 - 2022",
-      description: "Percentage: 85.60%",
-    },
-    {
-      ...createEducationItem(),
-      institutionName: "R.B.B. High (H.S) School",
-      degree: "Secondary - WBBSE",
-      year: "2019 - 2020",
-      description: "Percentage: 69.70%",
-    },
-  ],
-  projects: [
-    {
-      ...createProjectItem(),
-      projectName: "Online Voting System",
-      description:
-        "Developed a full-stack voting application with secure authentication, single-vote validation, and real-time result flow.\nBuilt backend APIs and frontend screens for a simple, reliable voting experience.",
-      techStack: ["Node.js", "Express", "SQLite", "JWT", "bcrypt", "Tailwind CSS"],
-      githubLink: "https://github.com/janmej0y/Online-Voting-System",
-      liveLink: "https://online-voting-system-henna.vercel.app",
-    },
-    {
-      ...createProjectItem(),
-      projectName: "RentHub",
-      description:
-        "Built a rental platform with authentication, storage, and listing management using Supabase.\nDesigned responsive product pages and clean data flows for renters and property listings.",
-      techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Supabase"],
-      githubLink: "https://github.com/janmej0y/RentHub",
-      liveLink: "https://rent-hub-two.vercel.app",
-    },
-    {
-      ...createProjectItem(),
-      projectName: "Kurmi Chatbot",
-      description:
-        "Created an AI chatbot using Gemini API with authentication, Markdown support, and MongoDB storage.\nFocused on a smooth chat interface, secure login, and practical AI response flow.",
-      techStack: ["Next.js", "MongoDB", "NextAuth", "Gemini API", "Markdown"],
-      githubLink: "https://github.com/janmej0y/Baklol-Chatbot",
-      liveLink: "https://baklol-chatbot.vercel.app",
-    },
-  ],
-  certifications: [
-    "Cybersecurity Virtual Internship",
-    "Full Stack BCT Training",
-    "Ethical Hacking Internship",
-    "Cloud Security",
-    "Java Full Stack",
-    "Cloud Foundation",
-  ],
-  achievements: ["Languages: English, Hindi, Bengali"],
+  summary: "",
+  skills: [],
+  experience: [],
+  education: [],
+  projects: [],
+  certifications: [],
+  achievements: [],
   template: "modern",
   pageCount: 1,
   photo: null,
@@ -182,7 +86,7 @@ const idleUploadStatus: UploadStatus = {
   progress: 0,
 };
 
-const RESUME_AUTOSAVE_KEY = "vampforge-resume-builder-draft";
+const RESUME_AUTOSAVE_KEY = "vampforge-resume-builder-draft-v2";
 
 type ResumeAction =
   | {
@@ -512,8 +416,6 @@ export default function ResumeGeneratorPage() {
   useEffect(() => {
     try {
       const savedDraft = window.localStorage.getItem(RESUME_AUTOSAVE_KEY);
-      const storedProfile = readStoredUserProfile();
-
       if (savedDraft) {
         dispatch({ type: "loadResume", value: JSON.parse(savedDraft) as ResumeData });
         showToast({
@@ -521,29 +423,11 @@ export default function ResumeGeneratorPage() {
           description: "Your last saved resume builder draft was loaded.",
           variant: "info",
         });
-      } else if (storedProfile) {
-        dispatch({
-          type: "loadResume",
-          value: {
-            ...initialResumeData,
-            personalInfo: {
-              ...initialResumeData.personalInfo,
-              fullName: storedProfile.fullName || initialResumeData.personalInfo.fullName,
-              title: storedProfile.title || initialResumeData.personalInfo.title,
-              email: storedProfile.email || initialResumeData.personalInfo.email,
-              phone: storedProfile.phone || initialResumeData.personalInfo.phone,
-              location: storedProfile.location || initialResumeData.personalInfo.location,
-              website: storedProfile.website || initialResumeData.personalInfo.website,
-              linkedin: storedProfile.linkedin || initialResumeData.personalInfo.linkedin,
-              github: storedProfile.github || initialResumeData.personalInfo.github,
-            },
-          },
-        });
       }
     } catch {
       showToast({
         title: "Could not restore resume draft",
-        description: "The saved draft was invalid, so the sample resume stayed loaded.",
+        description: "The saved draft was invalid, so a blank resume form stayed loaded.",
         variant: "error",
       });
     } finally {
@@ -585,7 +469,7 @@ export default function ResumeGeneratorPage() {
     dispatch({ type: "loadResume", value: initialResumeData });
     showToast({
       title: "Resume form reset",
-      description: "The default sample resume has been restored.",
+      description: "A blank guided resume form is ready.",
       variant: "success",
     });
   };
@@ -593,8 +477,8 @@ export default function ResumeGeneratorPage() {
   const handleLoadSample = () => {
     dispatch({ type: "loadResume", value: initialResumeData });
     showToast({
-      title: "Sample resume loaded",
-      description: "You can edit the sample and it will autosave.",
+      title: "Blank resume loaded",
+      description: "Use the section guides and placeholders to add your own details.",
       variant: "success",
     });
   };

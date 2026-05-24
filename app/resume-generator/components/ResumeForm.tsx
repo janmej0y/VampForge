@@ -97,13 +97,13 @@ const personalFields: Array<{
   label: string;
   placeholder: string;
 }> = [
-  { key: "fullName", label: "Full Name", placeholder: "Janmejoy Mahato" },
-  { key: "title", label: "Professional Title", placeholder: "Senior Full-Stack Engineer" },
-  { key: "email", label: "Email", placeholder: "janmejoy@email.com" },
-  { key: "phone", label: "Phone", placeholder: "+91 7477661933" },
-  { key: "website", label: "Portfolio / Website", placeholder: "https://janmejoy.is-a.dev" },
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/janmejoy" },
-  { key: "github", label: "GitHub", placeholder: "https://github.com/janmej0y" },
+  { key: "fullName", label: "Full Name", placeholder: "Your full name" },
+  { key: "title", label: "Professional Title", placeholder: "Frontend Developer" },
+  { key: "email", label: "Email", placeholder: "you@example.com" },
+  { key: "phone", label: "Phone", placeholder: "+1 555 000 0000" },
+  { key: "website", label: "Portfolio / Website", placeholder: "https://yourportfolio.com" },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username" },
+  { key: "github", label: "GitHub", placeholder: "https://github.com/username" },
 ];
 
 const backgroundThemes: Array<{ value: ResumeBackgroundTheme; label: string }> = [

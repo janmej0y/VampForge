@@ -1,10 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Menu, Moon, Search, Sparkles, Sun } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { navigation } from "@/lib/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  getInitialsFromName,
+  getNameFromEmail,
+  readAuthenticatedUser,
+} from "@/lib/user-profile";
 
 type NavbarProps = {
   theme: "dark" | "light";
@@ -19,6 +24,10 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
   const [query, setQuery] = useState("");
   const [searchFeedback, setSearchFeedback] = useState("");
   const [alertsOpen, setAlertsOpen] = useState(false);
+  const [authUser, setAuthUser] = useState(() => ({
+    displayName: "Guest User",
+    email: "Sign in to sync",
+  }));
 
   const searchIndex = useMemo(
     () =>
@@ -45,6 +54,21 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
     setSearchFeedback(`Opening ${match.title}.`);
     router.push(match.href);
   };
+
+  useEffect(() => {
+    const storedUser = readAuthenticatedUser();
+
+    if (!storedUser?.email) {
+      return;
+    }
+
+    setAuthUser({
+      displayName: storedUser.displayName || getNameFromEmail(storedUser.email),
+      email: storedUser.email,
+    });
+  }, []);
+
+  const profileInitials = getInitialsFromName(authUser.displayName || authUser.email);
 
   return (
     <header className="sticky top-0 z-50 mb-6 w-full max-w-full">
@@ -142,12 +166,12 @@ export function Navbar({ theme, onToggleTheme, onOpenSidebar }: NavbarProps) {
               </div>
               <div className="app-profile-pill flex min-w-0 items-center gap-3 rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,15,30,0.82),rgba(10,18,35,0.7))] px-3 py-2.5">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#5eead4,#a5b4fc)] text-sm font-semibold text-slate-950 shadow-[0_14px_34px_rgba(20,184,166,0.16)]">
-                  JM
+                  {profileInitials}
                 </div>
                 <div className="hidden min-w-0 sm:block">
-                  <div className="truncate text-sm font-semibold text-white">Janmejoy</div>
+                  <div className="truncate text-sm font-semibold text-white">{authUser.displayName}</div>
                   <div className="truncate text-xs text-muted-foreground">
-                    Web Developer
+                    {authUser.email}
                   </div>
                 </div>
               </div>
