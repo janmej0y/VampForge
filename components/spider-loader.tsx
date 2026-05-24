@@ -1,20 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 const LOADER_DURATION = 5000;
+const LOADER_SEEN_KEY = "vampforge-loader-seen";
 
 export function SpiderLoader() {
-  const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(true);
-    const timeout = window.setTimeout(() => setVisible(false), LOADER_DURATION);
+    const loaderSeen = window.sessionStorage.getItem(LOADER_SEEN_KEY);
 
-    return () => window.clearTimeout(timeout);
-  }, [pathname]);
+    if (loaderSeen) {
+      return;
+    }
+
+    window.sessionStorage.setItem(LOADER_SEEN_KEY, "true");
+    setVisible(true);
+
+    const timeout = window.setTimeout(() => {
+      setVisible(false);
+    }, LOADER_DURATION);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, []);
 
   if (!visible) return null;
 
